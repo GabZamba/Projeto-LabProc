@@ -3,11 +3,11 @@
 # Lista dos arquivos fonte
 #  Inclua seus arquivos aqui
 #
-FONTES = startup.s controlar_interrupcoes.c
+FONTES = interrupt.s context_change.s gpio_init.c sched.c main.c
 
-BREAKPOINTS= start main stop
+BREAKPOINTS= gpio_init main main2
 
-INIT_CODE= start
+INIT_CODE= reset
 
 #
 # Arquivos de saída
@@ -97,11 +97,11 @@ gdb-auto: ${EXEC}
 		-ex "monitor halt" \
 		-ex "shell sleep 0.5" \
 		-ex "load" \
-		${EXEC}
-		$(foreach breakpoint, $(BREAKPOINTS), -ex "b $(breakpoint)") \
-		-ex "j ${INIT_CODE}" \
+		${EXEC} \
 		-ex "layout src" \
-		-ex "layout regs"
+		-ex "layout regs" \
+		$(foreach breakpoint, $(BREAKPOINTS), -ex "b $(breakpoint)") \
+		-ex "j ${INIT_CODE}"
 
 #
 # Iniciar gdb com qemu
@@ -118,9 +118,9 @@ gdb-qemu-auto: ${EXEC}
 	gdb-multiarch -ex "set architecture arm" \
 		-ex "target extended-remote :1234" \
 		-ex "load"  ${EXEC} \
-		$(foreach breakpoint, $(BREAKPOINTS), -ex "b $(breakpoint)") \
-		-ex "j ${INIT_CODE}" \
 		-ex "layout src" \
-		-ex "layout regs"
+		-ex "layout regs" \
+		$(foreach breakpoint, $(BREAKPOINTS), -ex "b $(breakpoint)") \
+		-ex "j ${INIT_CODE}"
 
 
