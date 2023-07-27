@@ -75,14 +75,17 @@ volatile void *curr_tcb = &tcb[0]; // tcb do thread atual
  */
 void schedule(void)
 {
-   if (tid == 0)
-   {
-      tid = 1;
-      curr_tcb = &tcb[1];
-   }
-   else
-   {
-      tid = 0;
-      curr_tcb = &tcb[0];
-   }
+    if (tid == 0)
+    {
+        tid = 1;
+        curr_tcb = &tcb[1];
+    }
+    else
+    {
+        tid = 0;
+        curr_tcb = &tcb[0];
+    }
+    blinkNumber(tid);
+    resetTimer();
+    return;
 }
