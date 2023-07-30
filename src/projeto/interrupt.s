@@ -1,4 +1,5 @@
-.set INTPND, 0x03ff4004 // interrupções pendentes em 1
+@ .set INTPND, 0x03ff4004 // interrupções pendentes em 1
+.set INTPND, 0x40100000 // QEMU
 
 .set MODO_SVR, 0b10011
 
@@ -62,7 +63,10 @@ start:
     ldr r0, =tcb            // curr_tcb = &tcb[0]
     ldr r1, =curr_tcb
     str r0, [r1]
-    b context_change
+    bl context_change
+.global stop
+stop:
+    b stop
 
 /*
  * Ponto de entrada do kernel.
@@ -94,3 +98,5 @@ ack:
     str r1, [r0]                    // reconhece todas as interrupções
     pop {r0-r1}
     subs pc, lr, #4                 // retorna do IRQ
+    // TODO: não funciona testar diretamente chamando "j _irq"
+    // porque ele não salva o LR, e nisso retorna para a posição 0 - 4 == UNDEF

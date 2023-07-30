@@ -5,7 +5,7 @@
 int main(void)
 {
    int i;
-   for (;;)
+   for (i = 0; i < 1; i++)
    {
       for (i = 0; i < 5; i++)
          ;
@@ -15,11 +15,12 @@ int main(void)
 
 int main2(void)
 {
-   int i;
-   for (;;)
+   int i, j;
+   for (j = 0; j < 3; j++)
    {
       for (i = 0; i < 7; i++)
          ;
       yield();
    }
+   yield();
 }

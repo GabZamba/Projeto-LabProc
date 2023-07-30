@@ -1,3 +1,4 @@
+.set MODO_SVR, 0b10011
 
 .text
 
@@ -40,6 +41,11 @@ thread_switch:
     // escala o próximo processo e em seguida troca de contexto
     bl schedule
 
+    // salva nas flags se é ou não modo SVR
+    mrs r0, cpsr
+    and r0, r0, #0x1f // aplica máscara nos 5 bits de modo
+    cmp r0, #MODO_SVR
+
 .global context_change
 context_change:
     /*
@@ -58,6 +64,8 @@ context_change:
     ldr lr, [r0, #60]
     ldr r0, [r0]
 
-    // retorna para o thread, mudando o modo 
+    // retorna para o thread, mudando o modo
+    beq returnSWI       // desvia se modo atual é SVR (definido nas flags mais acima)
+    subs pc, lr, #4     // retorno IRQ
+returnSWI:
     movs pc, lr         // retorno SWI
-    @ subs pc, lr, #4     // retorno IRQ

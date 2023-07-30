@@ -3,9 +3,9 @@
 # Lista dos arquivos fonte
 #  Inclua seus arquivos aqui
 #
-FONTES = interrupt.s context_change.s gpio_init.c sched.c main.c
+FONTES = interrupt.s context_change.s aux.s gpio_utils.c sched.c main.c
 
-BREAKPOINTS= gpio_init main main2
+BREAKPOINTS= panic gpio_init main main2 thread_switch context_change trata_swi schedule reset stop blinkNumber
 
 INIT_CODE= reset
 

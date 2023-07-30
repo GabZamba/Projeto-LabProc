@@ -1,5 +1,6 @@
 
 #include <stdint.h>
+#include "gpio_utils.h"
 
 // Definidos pelo linker:
 extern uint8_t stack_usr1[];
@@ -8,6 +9,7 @@ extern uint8_t stack_usr2[];
 // Pontos de entrada dos threads
 int main(void);
 int main2(void);
+void stop(void); // rótulo stop no interrupt.s
 
 /**
  * Estrutura do
@@ -15,7 +17,8 @@ int main2(void);
  */
 typedef struct
 {
-   uint32_t regs[17]; // contexto
+    uint32_t regs[17];         // 16 registradores + cpsr
+    unsigned int priority : 2; // prioridade (de 0 a 3)
 } tcb_t;
 
 /**
@@ -28,9 +31,12 @@ tcb_t tcb[2] = {
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // r0-r12
         (uint32_t)stack_usr1,                  // sp
-        0,                                     // lr inicial
+        (uint32_t)stop,                        // lr inicial
         (uint32_t)main,                        // pc = lr = ponto de entrada
-        0x10                                   // valor do cpsr (modo usuário)
+        0x10,                                  // valor do cpsr (modo usuário)
+        0                                      // prioridade
+
+        // TODO: retorna ao loop do stop no interrupt.s
     },
     /*
      * Contexto do segundo thread (main2).
@@ -40,7 +46,10 @@ tcb_t tcb[2] = {
         (uint32_t)stack_usr2,                  // sp
         0,                                     // lr inicial
         (uint32_t)main2,                       // pc = lr = ponto de entrada
-        0x10                                   // valor do cpsr (modo usuário)
+        0x10,                                  // valor do cpsr (modo usuário)
+        0                                      // prioridade
+
+        // TODO: CUIDADO, COMO LR ESTÁ EM 0, AO RETORNAR DA FUNÇÃO MAIN2, ELE RETORNA AO _RESET
     }};
 
 /**
@@ -49,10 +58,11 @@ tcb_t tcb[2] = {
  */
 void __attribute__((naked)) yield(void)
 {
-   asm volatile("push {lr}  \n\t"
-                "mov r0, #1 \n\t"
-                "swi #0     \n\t"
-                "pop {pc}");
+    asm volatile(
+        "push {lr}  \n\t"
+        "mov r0, #1 \n\t"
+        "swi #0     \n\t"
+        "pop {pc}");
 }
 
 /**
@@ -60,10 +70,11 @@ void __attribute__((naked)) yield(void)
  */
 int __attribute__((naked)) getpid(void)
 {
-   asm volatile("push {lr}  \n\t"
-                "mov r0, #2 \n\t"
-                "swi #0     \n\t"
-                "pop {pc}");
+    asm volatile(
+        "push {lr}  \n\t"
+        "mov r0, #2 \n\t"
+        "swi #0     \n\t"
+        "pop {pc}");
 }
 
 volatile int tid;                  // identificador do thread atual (0 ou 1)
