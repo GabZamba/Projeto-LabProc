@@ -57,12 +57,7 @@ loop_zera:
  */
 start:
     bl gpio_init
-    mov r0, #0              // tid = 0
-    ldr r1, =tid
-    str r0, [r1]
-    ldr r0, =tcb            // curr_tcb = &tcb[0]
-    ldr r1, =curr_tcb
-    str r0, [r1]
+    bl initializeScheduler
     bl context_change
 .global stop
 stop:

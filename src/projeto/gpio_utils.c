@@ -113,6 +113,17 @@ void blinkLeds(uint32_t value)
     return;
 }
 
-void resetTimer(void) {
-    *tcnt0 = TIMER_VALUE; 
+void resetTimer(void)
+{
+    *tcnt0 = TIMER_VALUE;
+}
+
+void disableTimer(void)
+{
+    tmod->Timer0_enable = 0;
+}
+
+void enableTimer(void)
+{
+    tmod->Timer0_enable = 1;
 }

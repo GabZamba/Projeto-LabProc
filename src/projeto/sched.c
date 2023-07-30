@@ -1,6 +1,10 @@
 
 #include <stdint.h>
+#include <string.h> // Incluir o cabeçalho para a função memset
 #include "gpio_utils.h"
+#include "buffer.h"
+
+Buffer buffer = {};
 
 // Definidos pelo linker:
 extern uint8_t stack_usr1[];
@@ -10,16 +14,6 @@ extern uint8_t stack_usr2[];
 int main(void);
 int main2(void);
 void stop(void); // rótulo stop no interrupt.s
-
-/**
- * Estrutura do
- * Thread control block (TCB).
- */
-typedef struct
-{
-    uint32_t regs[17];         // 16 registradores + cpsr
-    unsigned int priority : 2; // prioridade (de 0 a 3)
-} tcb_t;
 
 /**
  * Threads definidos no sistema.
@@ -34,8 +28,8 @@ tcb_t tcb[2] = {
         (uint32_t)stop,                        // lr inicial
         (uint32_t)main,                        // pc = lr = ponto de entrada
         0x10,                                  // valor do cpsr (modo usuário)
-        0                                      // prioridade
-
+        0,                                     // prioridade
+        0                                      // thread id
         // TODO: retorna ao loop do stop no interrupt.s
     },
     /*
@@ -47,8 +41,8 @@ tcb_t tcb[2] = {
         0,                                     // lr inicial
         (uint32_t)main2,                       // pc = lr = ponto de entrada
         0x10,                                  // valor do cpsr (modo usuário)
-        0                                      // prioridade
-
+        0,                                     // prioridade
+        0                                      // thread id
         // TODO: CUIDADO, COMO LR ESTÁ EM 0, AO RETORNAR DA FUNÇÃO MAIN2, ELE RETORNA AO _RESET
     }};
 
@@ -77,8 +71,18 @@ int __attribute__((naked)) getpid(void)
         "pop {pc}");
 }
 
-volatile int tid;                  // identificador do thread atual (0 ou 1)
-volatile void *curr_tcb = &tcb[0]; // tcb do thread atual
+volatile int tid;                   // identificador do thread atual (0 ou 1)
+volatile tcb_t *curr_tcb = &tcb[0]; // tcb do thread atual
+
+void initializeScheduler(void)
+{
+    initBuffer(&buffer);
+    enqueue(&buffer, &tcb[0]);
+    enqueue(&buffer, &tcb[1]);
+    tid = buffer.queue[buffer.start].tid;
+    *curr_tcb = buffer.queue[buffer.start];
+    return;
+}
 
 /**
  * Escalador:
@@ -86,17 +90,27 @@ volatile void *curr_tcb = &tcb[0]; // tcb do thread atual
  */
 void schedule(void)
 {
-    if (tid == 0)
-    {
-        tid = 1;
-        curr_tcb = &tcb[1];
-    }
-    else
-    {
-        tid = 0;
-        curr_tcb = &tcb[0];
-    }
-    blinkNumber(tid);
+    disableTimer();
+
+    // move current thread to the end of the queue
+    // sets the prev_tcb
+    tcb_t prev_tcb;
+
+    bool couldDequeue = dequeue(&buffer, &prev_tcb);
+
+    bool couldEnqueue = enqueue(&buffer, curr_tcb);
+
+    if (!couldDequeue || !couldEnqueue)
+        stop();
+
+    // gets the next executing thread
+    *curr_tcb = buffer.queue[buffer.start];
+    tid = curr_tcb->tid;
+
+    blinkNumber(tid); // blinks the new thread id
+
+    enableTimer();
     resetTimer();
+
     return;
 }

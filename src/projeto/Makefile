@@ -3,9 +3,9 @@
 # Lista dos arquivos fonte
 #  Inclua seus arquivos aqui
 #
-FONTES = interrupt.s context_change.s aux.s gpio_utils.c sched.c main.c
+FONTES = interrupt.s context_change.s aux.s gpio_utils.c buffer.c sched.c main.c 
 
-BREAKPOINTS= panic gpio_init main main2 thread_switch context_change trata_swi schedule reset stop blinkNumber
+BREAKPOINTS= panic main main2 context_change
 
 INIT_CODE= reset
 
@@ -28,6 +28,12 @@ OBJETOS = $(OBJ:.c=.o)
 # Opções do compilador C
 #
 OPTS = -g
+
+#
+# Opções do linker
+#
+LDOPTS = -L/usr/lib/gcc/arm-none-eabi/10.3.1/ -L/usr/lib/arm-none-eabi/lib
+LDOPTS += -lc -lgcc
 
 #
 # Gerar executável

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef GPIO_UTILS_H
+#define GPIO_UTILS_H
 
 #include <stdint.h>
 
@@ -19,3 +20,9 @@ void blinkNumber(uint32_t num);
 void blinkLeds(uint32_t num);
 
 void resetTimer(void);
+
+void disableTimer(void);
+
+void enableTimer(void);
+
+#endif

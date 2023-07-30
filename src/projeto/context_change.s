@@ -41,7 +41,7 @@ thread_switch:
     // escala o próximo processo e em seguida troca de contexto
     bl schedule
 
-    // salva nas flags se é ou não modo SVR
+    // salva nas flags se está ou não modo SVR
     mrs r0, cpsr
     and r0, r0, #0x1f // aplica máscara nos 5 bits de modo
     cmp r0, #MODO_SVR
