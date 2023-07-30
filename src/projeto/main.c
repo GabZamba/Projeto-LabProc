@@ -5,9 +5,9 @@
 int main(void)
 {
    int i, j;
-   for (j = 0; j < 2; j++)
+   for (i = 0; i < 2; i++)
    {
-      for (i = 0; i < 5; i++)
+      for (j = 0; j < 5; j++)
          ;
       yield();
    }
@@ -16,9 +16,9 @@ int main(void)
 int main2(void)
 {
    int i, j;
-   for (j = 0; j < 3; j++)
+   for (i = 0; i < 3; i++)
    {
-      for (i = 0; i < 7; i++)
+      for (j = 0; j < 7; j++)
          ;
       yield();
    }

@@ -25,6 +25,7 @@ typedef struct
     tcb_t queue[BUFFER_SIZE];
 } Buffer;
 
+/* Initialize the Buffer */
 void initBuffer(Buffer *buffer)
 {
     buffer->start = 0;
@@ -33,6 +34,7 @@ void initBuffer(Buffer *buffer)
     buffer->isFull = false;
 }
 
+/* Enqueues the given tcb on the buffer */
 bool enqueue(Buffer *buffer, volatile tcb_t *thread)
 {
     if (buffer->isFull)
@@ -52,6 +54,7 @@ bool enqueue(Buffer *buffer, volatile tcb_t *thread)
     return true;
 }
 
+/* Dequeues the buffer and saves the value on the given tcb */
 bool dequeue(Buffer *buffer, volatile tcb_t *thread)
 {
     if (buffer->isEmpty)

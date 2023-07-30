@@ -69,3 +69,8 @@ context_change:
     subs pc, lr, #4     // retorno IRQ
 returnSWI:
     movs pc, lr         // retorno SWI
+
+.global close_thread
+close_thread:
+    bl schedule2
+    b context_change

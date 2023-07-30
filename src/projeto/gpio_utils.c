@@ -41,14 +41,14 @@ int gpio_init()
     // configura timer0 como IRQ
     intmod->Timer0 = 0;
 
-    // habilita interrupção glboal e do timer0
+    // habilita interrupção global e do timer0
     intmsk->GlobalInterrupt = 0;
     intmsk->Timer0 = 0;
 
     // altera o valor de início do temporizador
     *tdata0 = TIMER_VALUE; // 1s
 
-    // habilita a comtagem
+    // habilita a contagem
     tmod->Timer0 = 0; // reinicia modo do timer 0
     tmod->Timer0_enable = 1;
 

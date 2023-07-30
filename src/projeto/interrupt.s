@@ -74,6 +74,9 @@ trata_swi:
     cmp r0, #2          // função getpid: retorna a identificação do thread atual
     beq getid
 
+    cmp r0, #3          // função getpid: retorna a identificação do thread atual
+    beq close_thread
+
     // outras funções do kernel vão aqui...
     movs pc, lr          // retorna da interrupção
 

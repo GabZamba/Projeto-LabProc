@@ -13,7 +13,9 @@ extern uint8_t stack_usr2[];
 // Pontos de entrada dos threads
 int main(void);
 int main2(void);
-void stop(void); // rótulo stop no interrupt.s
+void context_change(void); // rótulo stop no interrupt.s
+void stop(void);           // rótulo stop no interrupt.s
+void destroy_thread(void); // declaracao da funcao final de cada thread
 
 /**
  * Threads definidos no sistema.
@@ -25,7 +27,7 @@ tcb_t tcb[2] = {
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // r0-r12
         (uint32_t)stack_usr1,                  // sp
-        (uint32_t)stop,                        // lr inicial
+        (uint32_t)destroy_thread,              // lr inicial
         (uint32_t)main,                        // pc = lr = ponto de entrada
         0x10,                                  // valor do cpsr (modo usuário)
         0,                                     // prioridade
@@ -70,6 +72,18 @@ int __attribute__((naked)) getpid(void)
         "swi #0     \n\t"
         "pop {pc}");
 }
+/**
+ * Destrói a thread atual, executando a próxima na fila.
+ */
+void __attribute__((naked)) destroy_thread(void)
+{
+    asm volatile(
+        // "push {lr}  \n\t"
+        "mov r0, #3 \n\t"
+        "swi #0     \n\t"
+        // "pop {pc}"
+    );
+}
 
 volatile int tid;                   // identificador do thread atual (0 ou 1)
 volatile tcb_t *curr_tcb = &tcb[0]; // tcb do thread atual
@@ -77,10 +91,13 @@ volatile tcb_t *curr_tcb = &tcb[0]; // tcb do thread atual
 void initializeScheduler(void)
 {
     initBuffer(&buffer);
+
     enqueue(&buffer, &tcb[0]);
     enqueue(&buffer, &tcb[1]);
+
     tid = buffer.queue[buffer.start].tid;
     *curr_tcb = buffer.queue[buffer.start];
+
     return;
 }
 
@@ -93,14 +110,12 @@ void schedule(void)
     disableTimer();
 
     // move current thread to the end of the queue
-    // sets the prev_tcb
     tcb_t prev_tcb;
 
-    bool couldDequeue = dequeue(&buffer, &prev_tcb);
+    if (!dequeue(&buffer, &prev_tcb))
+        stop();
 
-    bool couldEnqueue = enqueue(&buffer, curr_tcb);
-
-    if (!couldDequeue || !couldEnqueue)
+    if (!enqueue(&buffer, curr_tcb))
         stop();
 
     // gets the next executing thread
@@ -113,4 +128,28 @@ void schedule(void)
     resetTimer();
 
     return;
+}
+
+/**
+ * Escalador:
+ * Escolhe o próximo thread.
+ */
+void schedule2(void)
+{
+    disableTimer();
+
+    // move current thread to the end of the queue
+    tcb_t prev_tcb;
+
+    if (!dequeue(&buffer, &prev_tcb))
+        stop();
+
+    // gets the next executing thread
+    *curr_tcb = buffer.queue[buffer.start];
+    tid = curr_tcb->tid;
+
+    blinkNumber(tid); // blinks the new thread id
+
+    enableTimer();
+    resetTimer();
 }
