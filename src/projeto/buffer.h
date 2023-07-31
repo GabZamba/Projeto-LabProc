@@ -6,7 +6,7 @@
 #include <stdbool.h>
 // #include <string.h> // Incluir o cabeçalho para a função memset
 
-#define BUFFER_SIZE 5
+#define BUFFER_SIZE 3
 
 /**
  * Estrutura do
@@ -14,7 +14,11 @@
  */
 typedef struct
 {
-    uint32_t regs[17];         // 16 registradores + cpsr
+    uint32_t regs[13]; // r0-r12
+    uint32_t sp;
+    uint32_t lr;
+    uint32_t pc;
+    uint32_t cpsr;
     unsigned int priority : 2; // prioridade (de 0 a 3)
     uint8_t tid;               // thread id
 } tcb_t;

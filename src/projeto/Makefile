@@ -5,7 +5,7 @@
 #
 FONTES = interrupt.s context_change.s aux.s gpio_utils.c buffer.c sched.c main.c 
 
-BREAKPOINTS= panic main main2 context_change stop close_thread
+BREAKPOINTS= panic mainSVR main main2 context_change stop close_thread _reset reset start _undef schedule2 thread_switch schedule
 
 INIT_CODE= reset
 
