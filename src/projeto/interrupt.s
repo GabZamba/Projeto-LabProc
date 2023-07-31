@@ -58,7 +58,7 @@ loop_zera:
 start:
     bl gpio_init
     bl initializeScheduler
-    bl context_change
+    b context_change
 .global stop
 stop:
     b stop

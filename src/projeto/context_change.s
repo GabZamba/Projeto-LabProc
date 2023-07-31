@@ -41,13 +41,13 @@ thread_switch:
     // escala o próximo processo e em seguida troca de contexto
     bl schedule
 
+.global context_change
+context_change:
     // salva nas flags se está ou não modo SVR
     mrs r0, cpsr
     and r0, r0, #0x1f // aplica máscara nos 5 bits de modo
     cmp r0, #MODO_SVR
 
-.global context_change
-context_change:
     /*
     * Retorna no conexto de outro thread
     */
@@ -72,5 +72,8 @@ returnSWI:
 
 .global close_thread
 close_thread:
+    @ push {lr}
     bl schedule2
+    @ pop {pc}
+    @ movs pc, lr
     b context_change
