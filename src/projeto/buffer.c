@@ -65,8 +65,7 @@ bool dequeue(Buffer *buffer, volatile tcb_t *thread)
         return false;
 
     // dequeue and save on pointer
-    // *thread = buffer->queue[buffer->start];
-    // TODO: verificar se há como manter o *thread
+    *thread = buffer->queue[buffer->start];
     buffer->queue[buffer->start] = (tcb_t){};
 
     // calculates new end position

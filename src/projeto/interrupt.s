@@ -85,9 +85,10 @@ trata_irq:
     ldr r0, =INTPND
     ldr r1, [r0]
 
-    tst r1, #(1 << 10)              // verifica interrupção 10 (timer 0)
+    ands r1, r1, #(1 << 10)         // verifica interrupção 10 (timer 0)
     beq ack                         // se não houver, reconhece todas
 
+    str r1, [r0]                    // reconhece interrupção do timer
     // tratamento da interrupção do timer 0
     pop {r0-r1}
     b thread_switch
@@ -96,5 +97,3 @@ ack:
     str r1, [r0]                    // reconhece todas as interrupções
     pop {r0-r1}
     subs pc, lr, #4                 // retorna do IRQ
-    // TODO: não funciona testar diretamente chamando "j _irq"
-    // porque ele não salva o LR, e nisso retorna para a posição 0 - 4 == UNDEF

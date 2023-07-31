@@ -13,11 +13,13 @@ extern uint8_t stack_usr3[];
 extern uint8_t stack_svr[];
 
 // Pontos de entrada dos threads
+int func1(void);
+int func2(void);
 int main(void);
-int mainSVR(void);
-int main2(void);
-void context_change(void); // rótulo stop no interrupt.s
+
 void stop(void);           // rótulo stop no interrupt.s
+void context_change(void); // rótulo context_change no interrupt.s
+
 void destroy_thread(void); // declaracao da funcao final de cada thread
 
 volatile int tid; // identificador do thread atual (0 ou 1)
@@ -29,43 +31,40 @@ volatile tcb_t *curr_tcb = &curr_tcb_value; // tcb do thread atual
  */
 tcb_t tcb[3] = {
     /*
-     * Contexto do primeiro thread (a principal de todas, exclusão leva ao _reset).
+     * Contexto da thread principal.
      */
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // r0-r12
         (uint32_t)stack_usr3,                  // sp
         (uint32_t)destroy_thread,              // lr inicial
-        (uint32_t)mainSVR,                     // pc = lr = ponto de entrada
+        (uint32_t)main,                        // pc = lr = ponto de entrada
         0x10,                                  // valor do cpsr (modo svr)
         0,                                     // prioridade
         1                                      // thread id
-        // TODO: retorna ao loop do stop no interrupt.s
     },
     /*
-     * Contexto do primeiro thread (main).
+     * Contexto do primeiro thread (func1).
      */
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // r0-r12
         (uint32_t)stack_usr1,                  // sp
         (uint32_t)destroy_thread,              // lr inicial
-        (uint32_t)main,                        // pc = lr = ponto de entrada
+        (uint32_t)func1,                       // pc = lr = ponto de entrada
         0x10,                                  // valor do cpsr (modo usuário)
         0,                                     // prioridade
         2                                      // thread id
-        // TODO: retorna ao loop do stop no interrupt.s
     },
     /*
-     * Contexto do segundo thread (main2).
+     * Contexto do segundo thread (func2).
      */
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // r0-r12
         (uint32_t)stack_usr2,                  // sp
         (uint32_t)destroy_thread,              // lr inicial
-        (uint32_t)main2,                       // pc = lr = ponto de entrada
+        (uint32_t)func2,                       // pc = lr = ponto de entrada
         0x10,                                  // valor do cpsr (modo usuário)
         0,                                     // prioridade
         3                                      // thread id
-        // TODO: CUIDADO, COMO LR ESTÁ EM 0, AO RETORNAR DA FUNÇÃO MAIN2, ELE RETORNA AO _RESET
     }};
 
 /**
@@ -121,7 +120,7 @@ void initializeScheduler(void)
  * Escalador:
  * Escolhe o próximo thread.
  */
-void schedule(void)
+void schedule(bool enqueueAgain)
 {
     disableTimer();
 
@@ -131,41 +130,20 @@ void schedule(void)
     if (!dequeue(&buffer, &prev_tcb))
         stop();
 
-    if (!enqueue(&buffer, curr_tcb))
-        stop();
+    if (enqueueAgain)
+    {
+        if (!enqueue(&buffer, curr_tcb))
+            stop();
+    }
 
     // gets the next executing thread
     *curr_tcb = buffer.queue[buffer.start];
     tid = curr_tcb->tid;
 
-    blinkNumber(tid); // blinks the new thread id
+    // blinkNumber(tid); // blinks the new thread id
 
     enableTimer();
     resetTimer();
 
     return;
-}
-
-/**
- * Escalador:
- * Escolhe o próximo thread.
- */
-void schedule2(void)
-{
-    disableTimer();
-
-    // move current thread to the end of the queue
-    tcb_t prev_tcb;
-
-    if (!dequeue(&buffer, &prev_tcb))
-        stop();
-
-    // gets the next executing thread
-    *curr_tcb = buffer.queue[buffer.start];
-    tid = curr_tcb->tid;
-
-    blinkNumber(tid); // blinks the new thread id
-
-    enableTimer();
-    resetTimer();
 }

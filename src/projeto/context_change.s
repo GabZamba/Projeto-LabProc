@@ -39,6 +39,7 @@ thread_switch:
     str r1, [r0]
 
     // escala o próximo processo e em seguida troca de contexto
+    mov r0, #1      // enqueueAgain = true
     bl schedule
 
 .global context_change
@@ -70,10 +71,11 @@ context_change:
 returnSWI:
     movs pc, lr         // retorno SWI
 
+/**
+ * Destrói a Thread atual
+ */
 .global close_thread
 close_thread:
-    @ push {lr}
-    bl schedule2
-    @ pop {pc}
-    @ movs pc, lr
+    mov r0, #0          // enqueueAgain = false (destroy)
+    bl schedule
     b context_change
