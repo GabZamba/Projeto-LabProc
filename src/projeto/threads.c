@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h> // Incluir o cabeçalho para a função memset
 #include "buffer.h"
+#include "kernel.h"
 
 // Definidos pelo linker:
 extern uint8_t stack_svr[];
@@ -85,4 +86,17 @@ void __attribute__((naked)) thread_exit(void)
     asm volatile(
         "mov r0, #3 \n\t"
         "swi #0     \n\t");
+}
+
+/**
+ * Faz a thread atual esperar o término da execução da thread com id thread_id
+ */
+void thread_join(uint8_t thread_id)
+{
+    tcb_t threadToWait;
+    while (getThreadById(thread_id, &threadToWait))
+    {
+        yield();
+    };
+    return;
 }

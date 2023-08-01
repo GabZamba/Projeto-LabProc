@@ -73,7 +73,7 @@ void initializeScheduler(void)
     uint8_t *threadId = &id;
 
     thread_create(threadId, NULL, main, NULL);
-    thread_create(threadId, NULL, func1, NULL);
+    // thread_create(threadId, NULL, func1, NULL);
     // thread_create(threadId, NULL, func2, NULL);
 
     getNextThread(&scheduler, &curr_buffer, &curr_tcb);
