@@ -24,21 +24,13 @@ SECTIONS {                  /* arquivo kernel.ld para QEMU arm virt */
 
   /*
    * Reserva espaço para as pilhas
-   * Dois threads e o sistema.
+   * Sistema, e restante do usuário
    */
   . = . + 4096;
   . = ALIGN(8);
-  stack_usr1 = .;
-
-  . = . + 4096;
-  . = ALIGN(8);
-  stack_usr2 = .;
-
-  . = . + 4096;
-  . = ALIGN(8);
-  stack_usr3 = .;
-
-  . = . + 4096;
-  . = ALIGN(8);
   stack_svr = .;
+
+  . = . + 4096;
+  . = ALIGN(8);
+  stack_usr = .;
 }

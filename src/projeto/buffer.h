@@ -19,8 +19,8 @@ typedef struct
     uint32_t lr;
     uint32_t pc;
     uint32_t cpsr;
-    unsigned int priority : 2; // prioridade (de 0 a 3)
-    uint8_t tid;               // thread id
+    uint8_t priority : 2; // prioridade (de 0 a 3)
+    uint8_t tid;          // thread id
 } tcb_t;
 
 typedef struct
