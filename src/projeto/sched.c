@@ -61,16 +61,6 @@ int __attribute__((naked)) getpid(void)
         "pop {pc}");
 }
 
-/**
- * Destrói a thread atual, executando a próxima na fila.
- */
-void __attribute__((naked)) destroy_thread(void)
-{
-    asm volatile(
-        "mov r0, #3 \n\t"
-        "swi #0     \n\t");
-}
-
 void initializeScheduler(void)
 {
     for (int i = 0; i < SCHEDULER_SIZE; i++)

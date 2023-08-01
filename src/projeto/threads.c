@@ -14,6 +14,8 @@ extern Scheduler scheduler;
 uint32_t count = 0;
 uint32_t nextTID(void) { return count++; }
 
+void thread_exit(void);
+
 /**
  * Cria uma nova thread, e a adiciona na fila de execução
  *
@@ -31,7 +33,7 @@ void thread_create(uint8_t *threadId, const uint8_t *priority, void (*routine)(v
 
     newThread.regs[0] = (uint32_t)args;
     newThread.sp = (uint32_t)stack_usr + (4096 * tid);
-    newThread.lr = (uint32_t)destroy_thread;
+    newThread.lr = (uint32_t)thread_exit;
     newThread.pc = (uint32_t)routine;
 
     newThread.cpsr = 0x10;
@@ -59,7 +61,8 @@ bool getThreadById(uint8_t threadId, tcb_t *thread)
     for (int i = 0; i < SCHEDULER_SIZE; i++)
     {
         currBuffer = scheduler.buffers[i];
-        if (currBuffer.isEmpty) continue;
+        if (currBuffer.isEmpty)
+            continue;
         // itera sobre o buffer
         for (int j = 0; j < BUFFER_SIZE; j++)
         {
@@ -72,4 +75,14 @@ bool getThreadById(uint8_t threadId, tcb_t *thread)
         }
     }
     return false;
+}
+
+/**
+ * Destrói a thread atual, executando a próxima na fila.
+ */
+void __attribute__((naked)) thread_exit(void)
+{
+    asm volatile(
+        "mov r0, #3 \n\t"
+        "swi #0     \n\t");
 }

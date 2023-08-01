@@ -17,6 +17,7 @@ int main(void)
    {
       thread_create(&threadIds[i], NULL, func2, NULL);
    }
+   thread_exit();
    func1(NULL);
 
    tcb_t thread;

@@ -24,4 +24,9 @@ void thread_create(uint8_t *threadId, const uint8_t *priority, void (*routine)(v
  */
 bool getThreadById(uint8_t threadId, tcb_t *thread);
 
+/**
+ * Destrói a thread atual, executando a próxima na fila.
+ */
+void thread_exit(void);
+
 #endif
