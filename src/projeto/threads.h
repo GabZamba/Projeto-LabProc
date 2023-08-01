@@ -15,5 +15,13 @@
  */
 void thread_create(uint8_t *threadId, const uint8_t *priority, void (*routine)(void *), void *args);
 
+/**
+ * Verifica se há uma thread ativa com o threadId informado
+ *
+ * @param threadId O ID da thread
+ * @param thread Os valores da thread serão retornados aqui
+ * @return true se encontrou thread, false se não encontrou
+ */
+bool getThreadById(uint8_t threadId, tcb_t *thread);
 
 #endif

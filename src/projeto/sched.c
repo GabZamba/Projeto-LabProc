@@ -5,7 +5,7 @@
 #include "buffer.h"
 #include "threads.h"
 
-Buffer buffer = {};
+Scheduler scheduler = {};
 
 // Pontos de entrada dos threads
 void func1(void *);
@@ -18,9 +18,24 @@ void context_change(void); // rótulo context_change no interrupt.s
 void destroy_thread(void); // declaracao da funcao final de cada thread
 
 volatile int tid; // identificador do thread atual (0 ou 1)
-volatile tcb_t curr_tcb_value;
-volatile tcb_t *curr_tcb = &curr_tcb_value; // tcb do thread atual
+tcb_t *curr_tcb;  // tcb do thread atual
+Buffer *curr_buffer;
 
+void getNextThread(Scheduler *scheduler, Buffer **nextBuffer, tcb_t **nextThread)
+{
+    for (int i = 0; i < SCHEDULER_SIZE; i++)
+    {
+        *nextBuffer = &(scheduler->buffers[i]);
+        if ((*nextBuffer)->isEmpty)
+            continue;
+        *nextThread = &((*nextBuffer)->queue[(*nextBuffer)->start]);
+        return;
+    }
+    // se todos estiverem vazios, retorna ao reset (pc e lr são 0)
+    *nextBuffer = &(scheduler->buffers[0]);
+    *nextThread = &((*nextBuffer)->queue[(*nextBuffer)->start]);
+    return;
+}
 /**
  * Chama o kernel com swi, a função "yield" (r0 = 1).
  * Devolve o controle ao sistema executivo, que pode escalar outro thread.
@@ -58,17 +73,22 @@ void __attribute__((naked)) destroy_thread(void)
 
 void initializeScheduler(void)
 {
-    initBuffer(&buffer);
+    for (int i = 0; i < SCHEDULER_SIZE; i++)
+    {
+        initBuffer(&(scheduler.buffers[i]));
+    }
+    // initBuffer(&buffer);
 
     uint8_t id = 0;
     uint8_t *threadId = &id;
 
     thread_create(threadId, NULL, main, NULL);
     thread_create(threadId, NULL, func1, NULL);
-    thread_create(threadId, NULL, func2, NULL);
+    // thread_create(threadId, NULL, func2, NULL);
 
-    tid = buffer.queue[buffer.start].tid;
-    *curr_tcb = buffer.queue[buffer.start];
+    getNextThread(&scheduler, &curr_buffer, &curr_tcb);
+
+    tid = curr_tcb->tid;
 
     return;
 }
@@ -84,17 +104,18 @@ void schedule(bool enqueueAgain)
     // move current thread to the end of the queue
     tcb_t prev_tcb;
 
-    if (!dequeue(&buffer, &prev_tcb))
+    if (!dequeue(curr_buffer, &prev_tcb))
         stop();
 
     if (enqueueAgain)
     {
-        if (!enqueue(&buffer, curr_tcb))
+        if (!enqueue(curr_buffer, &prev_tcb))
             stop();
     }
 
+    getNextThread(&scheduler, &curr_buffer, &curr_tcb);
+
     // gets the next executing thread
-    *curr_tcb = buffer.queue[buffer.start];
     tid = curr_tcb->tid;
 
     // blinkNumber(tid); // blinks the new thread id

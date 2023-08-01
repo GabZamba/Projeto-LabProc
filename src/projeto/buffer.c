@@ -3,7 +3,8 @@
 #include <stdbool.h>
 #include <string.h> // Incluir o cabeçalho para a função memset
 
-#define BUFFER_SIZE 3
+#define BUFFER_SIZE 5
+#define SCHEDULER_SIZE 4 // baseado no total de prioridades
 
 /**
  * Estrutura do
@@ -29,6 +30,11 @@ typedef struct
     tcb_t queue[BUFFER_SIZE];
 } Buffer;
 
+typedef struct
+{
+    Buffer buffers[4];
+} Scheduler;
+
 /* Initialize the Buffer */
 void initBuffer(Buffer *buffer)
 {
@@ -39,13 +45,13 @@ void initBuffer(Buffer *buffer)
 }
 
 /* Enqueues the given tcb on the buffer */
-bool enqueue(Buffer *buffer, volatile tcb_t *thread)
+bool enqueue(Buffer *buffer, tcb_t *addedThread)
 {
     if (buffer->isFull)
         return false;
 
     // enqueue
-    buffer->queue[buffer->end] = *thread;
+    buffer->queue[buffer->end] = *addedThread;
 
     // calculates new end position
     buffer->end = (buffer->end + 1) % BUFFER_SIZE;
@@ -59,13 +65,13 @@ bool enqueue(Buffer *buffer, volatile tcb_t *thread)
 }
 
 /* Dequeues the buffer and saves the value on the given tcb */
-bool dequeue(Buffer *buffer, volatile tcb_t *thread)
+bool dequeue(Buffer *buffer, tcb_t *removedThread)
 {
     if (buffer->isEmpty)
         return false;
 
     // dequeue and save on pointer
-    *thread = buffer->queue[buffer->start];
+    *removedThread = buffer->queue[buffer->start];
     buffer->queue[buffer->start] = (tcb_t){};
 
     // calculates new end position

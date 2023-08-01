@@ -6,7 +6,8 @@
 #include <stdbool.h>
 // #include <string.h> // Incluir o cabeçalho para a função memset
 
-#define BUFFER_SIZE 3
+#define BUFFER_SIZE 5
+#define SCHEDULER_SIZE 4 // baseado no total de prioridades
 
 /**
  * Estrutura do
@@ -31,6 +32,11 @@ typedef struct
     uint32_t end;
     tcb_t queue[BUFFER_SIZE];
 } Buffer;
+
+typedef struct
+{
+    Buffer buffers[SCHEDULER_SIZE];
+} Scheduler;
 
 void initBuffer(Buffer *buffer);
 

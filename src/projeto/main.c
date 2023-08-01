@@ -1,19 +1,29 @@
 
 #include <stdint.h>
 #include "kernel.h"
+#include "threads.h"
 
-int func1(void) {}
+void func1(void *args) {}
 
-int func2(void) {}
+void func2(void *args) {}
 
 int main(void)
 {
-   int i, j = 0;
-   for (i = 0; i < 2; i++)
+   const int numThreads = 3;
+   uint8_t threadIds[3];
+
+   int i = 0;
+   for (i = 0; i < numThreads; i++)
    {
-      for (j = 0; j < 5; j++)
-         ;
-      yield();
+      thread_create(&threadIds[i], NULL, func2, NULL);
    }
-   func1();
+   func1(NULL);
+
+   tcb_t thread;
+   for (i = 0; i < numThreads; i++)
+   {
+      getThreadById(threadIds[i], &thread);
+   }
+
+   yield();
 }
