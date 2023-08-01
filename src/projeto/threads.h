@@ -30,8 +30,12 @@ bool getThreadById(uint8_t threadId, tcb_t *thread);
 void thread_exit(void);
 
 /**
- * Faz a thread atual esperar o término da execução da thread com id thread_id
+ * Faz a thread atual esperar o término da execução da thread indicada pelo thread_id
  */
 void thread_join(uint8_t thread_id);
+
+extern void thread_mutex_lock(void * mutex);
+
+extern void thread_mutex_unlock(void * mutex);
 
 #endif

@@ -3,8 +3,14 @@
 #include "kernel.h"
 #include "threads.h"
 
+uint32_t mutex;
+
 void func1(void *args)
 {
+
+   thread_mutex_lock(&mutex);
+   yield();
+   thread_mutex_unlock(&mutex);
    for (int i = 0; i < 2; i++)
       yield();
 }
@@ -24,6 +30,9 @@ int main(void)
    {
       thread_create(&threadIds[i], NULL, func2, NULL);
    }
+   thread_mutex_lock(&mutex);
+   yield();
+   thread_mutex_unlock(&mutex);
 
    thread_join(threadToWaitFor);
    thread_exit();
