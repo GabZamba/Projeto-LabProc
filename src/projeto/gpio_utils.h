@@ -5,24 +5,63 @@
 
 extern void delay(int);
 
-int gpio_init(void);
+#define IRQ 1
+#define FIQ 0
+#define MASKED 1
+#define ENABLED 0
 
-uint32_t setLeds(uint32_t value);
+const int32_t TIMER_VALUE = 49999999; // valor de recarga para 1s em 50 MHz
 
-uint32_t setDisplay(uint32_t value);
+uint8_t getSwitches(void);
 
-uint32_t setDisplayNumber(uint32_t num);
+uint8_t getDisplay(void);
 
-uint32_t getSwitches(void);
+void clearDisplay(void);
 
-void blinkNumber(uint32_t num);
+void setDisplay(uint8_t value);
 
-void blinkLeds(uint32_t num);
+uint8_t getLeds(void);
 
-void resetTimer(void);
+void clearLeds(void);
 
-void disableTimer(void);
+void setLeds(uint8_t value);
 
-void enableTimer(void);
+/* 0 entrada, 1 saída */
+void setLedsMode(uint8_t mode);
+
+/* 0 entrada, 1 saída */
+void setDisplayMode(uint8_t mode);
+
+void enableGlobalInterrupt(void);
+
+void disableGlobalInterrupt(void);
+
+/* Displays the given 4 bit binary on the leds, and returns the previous value */
+uint8_t setLedsValue(uint8_t value);
+
+/* Displays the given 7 bit binary, and returns the previous value */
+uint8_t setDisplayValue(uint8_t value);
+
+/* Displays the given number, and returns the previous value */
+uint8_t setDisplayNumber(uint8_t num);
+
+void setTimer0Data(uint32_t value);
+
+void resetTimer0Count(void);
+
+void enableTimer0(void);
+
+void disableTimer0(void);
+
+void blinkNumber(uint8_t num);
+
+void blinkLeds(uint32_t value);
+
+void setTimer0Interruption(uint8_t mode);
+
+/* 1 se mascarado, 0 se habilitado */
+void setTimer0InterruptionMask(uint8_t mode);
+
+void gpio_init();
 
 #endif
