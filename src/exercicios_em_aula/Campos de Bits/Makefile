@@ -7,7 +7,7 @@ FONTES = startup.s campos_de_bit.c
 
 BREAKPOINTS= start main stop
 
-INIT_CODE= main
+INIT_CODE= start
 
 #
 # Arquivos de saída
@@ -97,7 +97,7 @@ gdb-auto: ${EXEC}
 		-ex "monitor halt" \
 		-ex "shell sleep 0.5" \
 		-ex "load" \
-		${EXEC}
+		${EXEC} \
 		$(foreach breakpoint, $(BREAKPOINTS), -ex "b $(breakpoint)") \
 		-ex "j ${INIT_CODE}" \
 		-ex "layout src" \
