@@ -13,7 +13,7 @@
  * @param routine A função que a thread executará
  * @param args Os parâmetros que serão passados à função
  */
-void thread_create(uint8_t *threadId, const uint8_t *priority, void (*routine)(void *), void *args);
+void thread_create(uint8_t *threadId, const uint8_t *priority, void *(*routine)(void *), void *args);
 
 /**
  * Verifica se há uma thread ativa com o threadId informado

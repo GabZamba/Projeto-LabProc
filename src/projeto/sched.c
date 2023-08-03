@@ -8,9 +8,9 @@
 Scheduler scheduler = {};
 
 // Pontos de entrada dos threads
-void func1(void *);
-void func2(void *);
-void main(void *);
+void *func1(void *);
+void *func2(void *);
+void *main(void *);
 
 void stop(void);           // rótulo stop no interrupt.s
 void context_change(void); // rótulo context_change no interrupt.s
