@@ -89,7 +89,7 @@ void initializeScheduler(void)
  */
 void schedule(bool enqueueAgain)
 {
-    disableTimer();
+    disableTimer0();
 
     // move current thread to the end of the queue
     tcb_t prev_tcb;
@@ -110,8 +110,11 @@ void schedule(bool enqueueAgain)
 
     // blinkNumber(tid); // blinks the new thread id
 
-    enableTimer();
-    resetTimer();
+    setDisplayNumber(tid);
+    setLedsValue(curr_tcb->priority);
+
+    enableTimer0();
+    resetTimer0Count();
 
     return;
 }

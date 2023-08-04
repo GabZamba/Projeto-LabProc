@@ -5,12 +5,12 @@
 
 extern void delay(int);
 
-#define IRQ 1
-#define FIQ 0
+#define IRQ 0
+#define FIQ 1
 #define MASKED 1
 #define ENABLED 0
 
-const int32_t TIMER_VALUE = 49999999; // valor de recarga para 1s em 50 MHz
+#define TIMER_VALUE 50000000 // valor de recarga para 1s em 50 MHz
 
 uint8_t getSwitches(void);
 
