@@ -1,5 +1,5 @@
 .set MODO_SVR, 0b10011
-
+.set MODO_IRQ, 0b10010
 .text
 
 /*
@@ -17,15 +17,22 @@ getid:
  */
 .global thread_switch
 thread_switch:
+    push {r0} //  será utilizado como auxiliar
+
+    // salva nas flags se está ou não modo IRQ (por conta do retorno unificado no context_change)
+    mrs r0, cpsr
+    and r0, r0, #0x1f // aplica máscara nos 5 bits de modo
+    cmp r0, #MODO_IRQ
+    subeq lr, lr, #4 // somente no irq, caso as flags determinadas anteriormente estejam ativas
+
     /*
     * Salva o contexto do usuário no Task Control Block
     */
-    push {r0}
     ldr r0, =curr_tcb
     ldr r0, [r0]
 
     // registradores r1-r14 do usuário
-    stmib r0, {r1-r14}^          
+    stmib r0, {r1-r14}^
 
     // salva endereço de retorno (lr)
     str lr, [r0, #60]
@@ -44,10 +51,6 @@ thread_switch:
 
 .global context_change
 context_change:
-    // salva nas flags se está ou não modo SVR
-    mrs r0, cpsr
-    and r0, r0, #0x1f // aplica máscara nos 5 bits de modo
-    cmp r0, #MODO_SVR
 
     /*
     * Retorna no conexto de outro thread
@@ -66,9 +69,6 @@ context_change:
     ldr r0, [r0]
 
     // retorna para o thread, mudando o modo
-    beq returnSWI       // desvia se modo atual é SVR (definido nas flags mais acima)
-    subs pc, lr, #4     // retorno IRQ
-returnSWI:
     movs pc, lr         // retorno SWI
 
 /**

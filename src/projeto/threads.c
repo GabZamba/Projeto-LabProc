@@ -12,7 +12,7 @@ void destroy_thread(void); // declaracao da funcao final de cada thread
 
 extern Scheduler scheduler;
 
-uint32_t count = 0;
+volatile uint32_t count = 0;
 uint32_t nextTID(void) { return count++; }
 
 void thread_exit(void);

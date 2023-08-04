@@ -56,8 +56,8 @@ loop_zera:
  * Ponto de entrada: executa o primeiro thread (tid = 0).
  */
 start:
-    bl gpio_init
     bl initializeScheduler
+    bl gpio_init
     b context_change
 .global stop
 stop:
@@ -81,19 +81,19 @@ trata_swi:
     movs pc, lr          // retorna da interrupção
 
 trata_irq:
-    push {r0-r1}
+    push {r0-r2}
     ldr r0, =INTPND
     ldr r1, [r0]
 
-    ands r1, r1, #(1 << 10)         // verifica interrupção 10 (timer 0)
+    ands r2, r1, #(1 << 10)         // verifica interrupção 10 (timer 0)
     beq ack                         // se não houver, reconhece todas
 
-    str r1, [r0]                    // reconhece interrupção do timer
+    str r2, [r0]                    // reconhece interrupção do timer
     // tratamento da interrupção do timer 0
-    pop {r0-r1}
+    pop {r0-r2}
     b thread_switch
 
 ack:
     str r1, [r0]                    // reconhece todas as interrupções
-    pop {r0-r1}
+    pop {r0-r2}
     subs pc, lr, #4                 // retorna do IRQ
