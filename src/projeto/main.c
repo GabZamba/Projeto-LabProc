@@ -1,11 +1,10 @@
 
 #include <stdint.h>
-#include "kernel.h"
 #include "threads.h"
 
 uint32_t mutex;
 
-void func1(void *args)
+void *func1(void *args)
 {
 
    thread_mutex_lock(&mutex);
@@ -15,7 +14,7 @@ void func1(void *args)
       yield();
 }
 
-void func2(void *args) {}
+void *func2(void *args) {}
 
 int main(void)
 {

@@ -2,20 +2,16 @@
 #include <stdint.h>
 #include <string.h> // Incluir o cabeçalho para a função memset
 #include "buffer.h"
-#include "kernel.h"
+#include "threads.h"
 
 // Definidos pelo linker:
 extern uint8_t stack_svr[];
 extern uint8_t stack_usr[];
 
-void destroy_thread(void); // declaracao da funcao final de cada thread
-
 extern Scheduler scheduler;
 
 volatile uint32_t count = 0;
 uint32_t nextTID(void) { return count++; }
-
-void thread_exit(void);
 
 /**
  * Cria uma nova thread, e a adiciona na fila de execução
@@ -99,4 +95,29 @@ void thread_join(uint8_t thread_id)
         yield();
     };
     return;
+}
+
+/**
+ * Chama o kernel com swi, a função "yield" (r0 = 1).
+ * Devolve o controle ao sistema executivo, que pode escalar outro thread.
+ */
+void __attribute__((naked)) yield(void)
+{
+    asm volatile(
+        "push {lr}  \n\t"
+        "mov r0, #1 \n\t"
+        "swi #0     \n\t"
+        "pop {pc}");
+}
+
+/**
+ * Retorna o thread-id do thread atual.
+ */
+int __attribute__((naked)) getpid(void)
+{
+    asm volatile(
+        "push {lr}  \n\t"
+        "mov r0, #2 \n\t"
+        "swi #0     \n\t"
+        "pop {pc}");
 }

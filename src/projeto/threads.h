@@ -38,4 +38,16 @@ extern void thread_mutex_lock(void * mutex);
 
 extern void thread_mutex_unlock(void * mutex);
 
+// Chamadas do kernel
+
+/**
+ * Devolve o controle ao sistema executivo, que pode escalar outro thread.
+ */
+void yield(void);
+
+/**
+ * Retorna o threadId da thread atual
+*/
+int getpid(void);
+
 #endif
