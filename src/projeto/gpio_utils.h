@@ -12,6 +12,8 @@ extern void delay(int);
 
 #define TIMER_VALUE 50000000 // valor de recarga para 1s em 50 MHz
 
+#define DELAY_TIME 10000000;
+
 uint8_t getSwitches(void);
 
 uint8_t getDisplay(void);
@@ -53,9 +55,9 @@ void enableTimer0(void);
 
 void disableTimer0(void);
 
-void blinkNumber(uint8_t num);
+void blinkNumber(uint8_t num, uint32_t time);
 
-void blinkLeds(uint32_t value);
+void blinkLeds(uint32_t value, uint32_t time);
 
 void setTimer0Interruption(uint8_t mode);
 

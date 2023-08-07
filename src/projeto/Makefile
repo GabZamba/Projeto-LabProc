@@ -9,7 +9,7 @@ FONTES = mutex.s interrupt.s context_change.s aux.s gpio_utils.c buffer.c sched.
 BREAKPOINTS= initializeScheduler initBuffer reset thread_exit context_change _irq _fiq _swi panic main func1 func2 stop _reset start _undef schedule context_change
 # BREAKPOINTS= reset panic stop #main func1 func2
 
-INIT_CODE= reset
+INIT_CODE= reset 
 
 #
 # Arquivos de saída

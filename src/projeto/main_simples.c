@@ -1,6 +1,5 @@
 
 #include <stdint.h>
-#include "kernel.h"
 #include "threads.h"
 
 uint32_t mutex;

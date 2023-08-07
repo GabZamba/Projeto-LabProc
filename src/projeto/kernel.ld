@@ -9,7 +9,7 @@ SECTIONS {                  /* arquivo kernel.ld para QEMU arm virt */
    /*
     * Segmentos text e data
     */
-   . = 0x8000;  /* 0x8000 no Evaluator7T, 0x40000000 no QEMU */
+   . = 0x40000000;  /* 0x8000 no Evaluator7T, 0x40000000 no QEMU */
   .text : { *(.text) }
   .data : { *(.data) }
 

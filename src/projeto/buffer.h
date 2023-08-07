@@ -2,9 +2,7 @@
 #define BUFFER_H
 
 #include <stdint.h>
-// #include <stdio.h>
 #include <stdbool.h>
-// #include <string.h> // Incluir o cabeçalho para a função memset
 
 #define BUFFER_SIZE 5
 #define SCHEDULER_SIZE 4 // baseado no total de prioridades
@@ -40,8 +38,8 @@ typedef struct
 
 void initBuffer(Buffer *buffer);
 
-bool enqueue(Buffer *buffer, volatile tcb_t *thread);
+bool enqueue(Buffer *buffer, tcb_t *addedThread);
 
-bool dequeue(Buffer *buffer, volatile tcb_t *thread);
+bool dequeue(Buffer *buffer, tcb_t *removedThread);
 
 #endif

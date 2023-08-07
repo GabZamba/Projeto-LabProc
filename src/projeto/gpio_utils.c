@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <string.h> // Incluir o cabeçalho para a função memset
 #include "evlt7t.h"
-#include "structs.h"
+#include "gpio_utils.h"
 
 extern void delay(int);
 
@@ -25,15 +25,6 @@ uint32_t *intmsk = (uint32_t *)0x40100010; // 1 se mascarado, 0 se habilitado
 uint32_t *tmod = (uint32_t *)0x40100014;   // configuração dos temporizadores
 uint32_t *tdata0 = (uint32_t *)0x40100018; // registrador de recarda do temp0
 uint32_t *tcnt0 = (uint32_t *)0x4010001C;  // registrador da contagem atual do temp0
-
-#define IRQ 0
-#define FIQ 1
-#define MASKED 1
-#define ENABLED 0
-
-#define TIMER_VALUE 50000000 // valor de recarga para 1s em 50 MHz
-
-const int32_t DELAY_TIME = 10000000;
 
 const int8_t DisplayNumber[16] = {0b1011111, 0b0000110, 0b0111011, 0b0101111, 0b1100110, 0b1101101, 0b1111101, 0b0000111, 0b1111111, 0b1101111, 0b1110111, 0b1111100, 0b1011001, 0b0111110, 0b1111001, 0b1110001};
 
@@ -98,36 +89,36 @@ void enableTimer0(void) { *tmod |= (0b1); }
 
 void disableTimer0(void) { *tmod &= (0b0); }
 
-void blinkNumber(uint8_t num)
+void blinkNumber(uint8_t num, uint32_t time)
 {
     uint8_t prevValue = getDisplay();
 
     clearDisplay();
-    delay(DELAY_TIME);
+    delay(time);
 
     setDisplayValue(DisplayNumber[num & 0x1f]);
-    delay(DELAY_TIME);
+    delay(time);
 
     clearDisplay();
-    delay(DELAY_TIME);
+    delay(time);
 
     setDisplayValue(prevValue);
 
     return;
 }
 
-void blinkLeds(uint32_t value)
+void blinkLeds(uint32_t value, uint32_t time)
 {
     uint8_t prevValue = getLeds();
 
     clearLeds();
-    delay(DELAY_TIME);
+    delay(time);
 
     setLedsValue(value);
-    delay(DELAY_TIME);
+    delay(time);
 
     clearLeds();
-    delay(DELAY_TIME);
+    delay(time);
 
     setLedsValue(prevValue);
 
