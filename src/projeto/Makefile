@@ -6,7 +6,7 @@
 FONTES = mutex.s interrupt.s context_change.s aux.s gpio_utils.c buffer.c sched.c main_simples.c threads.c
 
 # BREAKPOINTS= start _irq _fiq _swi wait_for_unlock thread_mutex_unlock thread_mutex_lock thread_exit getThreadById getNextThread initializeScheduler thread_create panic main func1 func2 context_change stop close_thread _reset reset start _undef thread_switch schedule
-BREAKPOINTS= initializeScheduler initBuffer reset thread_exit context_change _irq _fiq _swi panic main func1 func2 stop _reset start _undef schedule context_change
+BREAKPOINTS= getNextThread initializeScheduler initBuffer reset thread_exit context_change _irq _fiq _swi panic main func1 func2 stop _reset start _undef schedule context_change
 # BREAKPOINTS= reset panic stop #main func1 func2
 
 INIT_CODE= reset 

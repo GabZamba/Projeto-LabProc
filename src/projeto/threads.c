@@ -21,12 +21,12 @@ uint32_t nextTID(void) { return count++; }
  * @param routine A função que a thread executará
  * @param args Os parâmetros que serão passados à função
  */
-void thread_create(uint8_t *threadId, const uint8_t *priority, void *(*routine)(void *), void *args)
+void thread_create(uint8_t *threadId, uint8_t priority, void *(*routine)(void *), void *args)
 {
     tcb_t newThread = {0};
     uint8_t tid = nextTID();
 
-    const uint8_t threadPriority = (priority == NULL) ? 0 : *priority;
+    priority = (priority >= SCHEDULER_SIZE) ? SCHEDULER_SIZE - 1 : priority;
 
     newThread.regs[0] = (uint32_t)args;
     newThread.sp = (uint32_t)stack_usr + (4096 * tid);
@@ -35,12 +35,12 @@ void thread_create(uint8_t *threadId, const uint8_t *priority, void *(*routine)(
 
     newThread.cpsr = 0x10;
 
-    newThread.priority = threadPriority;
+    newThread.priority = priority;
     newThread.tid = tid;
 
     *threadId = tid;
 
-    Buffer *buffer = &scheduler.buffers[SCHEDULER_SIZE - 1 - threadPriority];
+    Buffer *buffer = &scheduler.buffers[SCHEDULER_SIZE - 1 - priority];
 
     enqueue(buffer, &newThread);
 }

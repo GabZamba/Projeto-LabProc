@@ -5,12 +5,14 @@
 #include "buffer.h"
 
 /* Initialize the Buffer */
-void initBuffer(Buffer *buffer)
+void initBuffer(Buffer *buffer, uint8_t quantumData)
 {
     buffer->start = 0;
     buffer->end = 0;
     buffer->isEmpty = true;
     buffer->isFull = false;
+    buffer->quantumData = quantumData;
+    buffer->quantumCnt = quantumData;
 }
 
 /* Enqueues the given tcb on the buffer */

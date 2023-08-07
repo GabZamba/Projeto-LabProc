@@ -26,7 +26,7 @@ void *func2(void *args)
 
 void *main(void *args)
 {
-   thread_create(NULL, NULL, func1, NULL);
-   thread_create(NULL, NULL, func2, NULL);
+   thread_create(NULL, 1, func1, NULL);
+   thread_create(NULL, 2, func2, NULL);
    return NULL;
 }
