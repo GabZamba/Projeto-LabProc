@@ -1,6 +1,8 @@
 
 #include <stdint.h>
 #include <string.h> // Incluir o cabeçalho para a função memset
+#include <stdio.h>
+#include <stdlib.h>
 #include "buffer.h"
 #include "threads.h"
 
@@ -10,8 +12,26 @@ extern uint8_t stack_usr[];
 
 extern Scheduler scheduler;
 
+extern tcb_t *curr_tcb; // tcb do thread atual
+
 volatile uint32_t count = 0;
 uint32_t nextTID(void) { return count++; }
+
+typedef struct ThreadReturnListItem
+{
+    void *data;
+    uint32_t tid;
+    struct ThreadReturnListItem *prev;
+    struct ThreadReturnListItem *next;
+} ThreadReturnListItem;
+
+typedef struct
+{
+    ThreadReturnListItem *start;
+    ThreadReturnListItem *end;
+} ThreadReturnList;
+
+ThreadReturnList threadReturnList = {};
 
 /**
  * Cria uma nova thread, e a adiciona na fila de execução
@@ -21,10 +41,10 @@ uint32_t nextTID(void) { return count++; }
  * @param routine A função que a thread executará
  * @param args Os parâmetros que serão passados à função
  */
-void thread_create(uint8_t *threadId, uint8_t priority, void *(*routine)(void *), void *args)
+void thread_create(uint32_t *threadId, uint8_t priority, void *(*routine)(void *), void *args)
 {
     tcb_t newThread = {0};
-    uint8_t tid = nextTID();
+    uint32_t tid = nextTID();
 
     priority = (priority >= SCHEDULER_SIZE) ? SCHEDULER_SIZE - 1 : priority;
 
@@ -52,7 +72,7 @@ void thread_create(uint8_t *threadId, uint8_t priority, void *(*routine)(void *)
  * @param thread Os valores da thread serão retornados aqui
  * @return true se encontrou thread, false se não encontrou
  */
-bool getThreadById(uint8_t threadId, tcb_t *thread)
+bool getThreadById(uint32_t threadId, tcb_t *thread)
 {
     Buffer currBuffer;
     for (int i = 0; i < SCHEDULER_SIZE; i++)
@@ -66,7 +86,8 @@ bool getThreadById(uint8_t threadId, tcb_t *thread)
             // retorna se o tid for igual
             if (currBuffer.queue[j].tid == threadId)
             {
-                *thread = currBuffer.queue[j];
+                if (thread != NULL) // retorna o valor se o ponteiro não for nulo
+                    *thread = currBuffer.queue[j];
                 return true;
             }
         }
@@ -80,20 +101,69 @@ bool getThreadById(uint8_t threadId, tcb_t *thread)
 void __attribute__((naked)) thread_exit(void)
 {
     asm volatile(
-        "mov r0, #3 \n\t"
+        "mov r1, r0 \n\t" // salva o ponteiro retornado em R1
+        "mov r0, #3 \n\t" // #3 é o valor para sair de uma thread pelo swi
         "swi #0     \n\t");
+}
+
+void save_return_pointer(void *returnPointer)
+{
+    if (returnPointer == NULL)
+        return;
+
+    ThreadReturnListItem *item = (ThreadReturnListItem *)malloc(sizeof(ThreadReturnListItem));
+    item->data = returnPointer;
+    item->tid = curr_tcb->tid;
+    item->next = NULL;
+    item->prev = NULL;
+
+    // se a lista está vazia
+    if (threadReturnList.start == NULL)
+    { // define início e fim da lista
+        threadReturnList.start = item;
+        threadReturnList.end = item;
+    }
+    else
+    { // insere no final da lista
+        item->prev = threadReturnList.end;
+        threadReturnList.end->next = item;
+        threadReturnList.end = item;
+    }
+}
+
+/**
+ * Procura na lista de retornos de thread o ponteiro retornado pela thread especificada
+ *
+ * @param thread_id O ID da thread
+ */
+void *findThreadReturn(uint32_t thread_id)
+{
+    ThreadReturnListItem *ptr = threadReturnList.start;
+    if (ptr == NULL)
+        return NULL;
+    while (ptr != NULL)
+    {
+        if (ptr->tid == thread_id)
+            return ptr->data;
+        else
+            ptr = ptr->next;
+    }
+    return NULL;
 }
 
 /**
  * Faz a thread atual esperar o término da execução da thread com id thread_id
+ *
+ * @param thread_id O ID da thread
+ * @param thread_return Ponteiro para o valor retornado pela thread passada
  */
-void thread_join(uint8_t thread_id)
+void thread_join(uint32_t thread_id, void **thread_return)
 {
-    tcb_t threadToWait;
-    while (getThreadById(thread_id, &threadToWait))
+    while (getThreadById(thread_id, NULL))
     {
         yield();
     };
+    *thread_return = findThreadReturn(thread_id);
     return;
 }
 

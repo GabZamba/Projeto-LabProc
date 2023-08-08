@@ -76,6 +76,8 @@ context_change:
  */
 .global close_thread
 close_thread:
+    mov r0, r1          // carrega para r0 o valor do ponteiro de retorno
+    bl save_return_pointer
     mov r0, #0          // enqueueAgain = false (destroy)
     bl schedule
     b context_change
