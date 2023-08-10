@@ -3,11 +3,9 @@
 # Lista dos arquivos fonte
 #  Inclua seus arquivos aqui
 #
-FONTES = stubs.c mutex.s interrupt.s context_change.s aux.s gpio_utils.c buffer.c sched.c main_simples.c threads.c
+FONTES = interrupt.s stubs.c mutex.s context_change.s aux.s gpio_utils.c buffer.c sched.c main.c threads.c
 
-# BREAKPOINTS= start _irq _fiq _swi wait_for_unlock thread_mutex_unlock thread_mutex_lock thread_exit getThreadById getNextThread initializeScheduler thread_create panic main func1 func2 context_change stop close_thread _reset reset start _undef thread_switch schedule
-BREAKPOINTS= thread_join findThreadReturn close_thread save_return_pointer getNextThread initializeScheduler initBuffer reset thread_exit context_change _irq _fiq _swi panic main func1 func2 stop _reset start _undef schedule context_change
-# BREAKPOINTS= reset panic stop #main func1 func2
+BREAKPOINTS= reset panic stop
 
 INIT_CODE= reset 
 
@@ -112,6 +110,7 @@ gdb-auto: ${EXEC}
 		-ex "shell sleep 0.5" \
 		-ex "set tmod[0] = 0" \
 		-ex "set *intpnd = *intpnd" \
+		-ex "set \$$cpsr = 0x13" \
 		-ex "j ${INIT_CODE}"
 
 #

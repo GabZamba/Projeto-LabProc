@@ -1,5 +1,5 @@
-@ .set INTPND, 0x03ff4004 // interrupções pendentes em 1
-.set INTPND, 0x40100000 // QEMU
+.set INTPND, 0x03ff4004 // pending interruptions in 1
+@ .set INTPND, 0x40100000 // QEMU
 
 .set MODO_SVR, 0b10011
 

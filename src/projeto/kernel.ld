@@ -1,36 +1,31 @@
 
 SECTIONS {                  /* arquivo kernel.ld para QEMU arm virt */
    /*
-    * Vetor de reset
+    * interruption vector
     */
    . = 0;
    .reset : { *(.reset) }
 
    /*
-    * Segmentos text e data
+    * text and data Segmentos
     */
-   . = 0x40000000;  /* 0x8000 no Evaluator7T, 0x40000000 no QEMU */
+   . = 0x8000;  /* 0x8000 on Evaluator7T, 0x40000000 on QEMU */
   .text : { *(.text) }
   .data : { *(.data) }
 
   /*
-   * Segmento bss
+   * bss segment
    */
-  inicio_bss = .;
+  bss_start = .;
   .bss : { *(.bss) }
   . = ALIGN(4); 
-  fim_bss = .;
+  bss_end = .;
   heap_start = .;
 
   /*
-   * Reserva espaço para as pilhas
-   * Sistema, e restante do usuário
+   * Reserve space for the system stack
    */
   . = . + 4096;
   . = ALIGN(8);
   stack_svr = .;
-
-  . = . + 4096;
-  . = ALIGN(8);
-  stack_usr = .;
 }

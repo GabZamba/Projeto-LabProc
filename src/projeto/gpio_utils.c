@@ -7,24 +7,24 @@
 extern void delay(int);
 
 /* Evaluator 7T */
-// uint32_t *intpnd = (uint32_t *)0x03ff4004; // interrupções pendentes em 1
-// uint32_t *iopmod = (uint32_t *)0x3ff5000;
-// uint32_t *iopdata = (uint32_t *)0x3ff5008;
-// uint32_t *intmod = (uint32_t *)0x03ff4000; // 1 se IRQ, 0 se FIQ (rápida)
-// uint32_t *intmsk = (uint32_t *)0x03ff4008; // 1 se mascarado, 0 se habilitado
-// uint32_t *tmod = (uint32_t *)0x03ff6000;   // configuração dos temporizadores
-// uint32_t *tdata0 = (uint32_t *)0x03ff6004; // registrador de recarda do temp0
-// uint32_t *tcnt0 = (uint32_t *)0x03ff600c;  // registrador de recarda do temp0
+uint32_t *intpnd = (uint32_t *)0x03ff4004; // interrupções pendentes em 1
+uint32_t *iopmod = (uint32_t *)0x3ff5000;
+uint32_t *iopdata = (uint32_t *)0x3ff5008;
+uint32_t *intmod = (uint32_t *)0x03ff4000; // 1 se IRQ, 0 se FIQ (rápida)
+uint32_t *intmsk = (uint32_t *)0x03ff4008; // 1 se mascarado, 0 se habilitado
+uint32_t *tmod = (uint32_t *)0x03ff6000;   // configuração dos temporizadores
+uint32_t *tdata0 = (uint32_t *)0x03ff6004; // registrador de recarda do temp0
+uint32_t *tcnt0 = (uint32_t *)0x03ff600c;  // registrador de recarda do temp0
 
 /* QEMU */
-uint32_t *intpnd = (uint32_t *)0x40100000; // interrupções pendentes em 1
-uint32_t *iopmod = (uint32_t *)0x40100004;
-uint32_t *iopdata = (uint32_t *)0x40100008;
-uint32_t *intmod = (uint32_t *)0x4010000C; // 1 se IRQ, 0 se FIQ (rápida)
-uint32_t *intmsk = (uint32_t *)0x40100010; // 1 se mascarado, 0 se habilitado
-uint32_t *tmod = (uint32_t *)0x40100014;   // configuração dos temporizadores
-uint32_t *tdata0 = (uint32_t *)0x40100018; // registrador de recarda do temp0
-uint32_t *tcnt0 = (uint32_t *)0x4010001C;  // registrador da contagem atual do temp0
+// uint32_t *intpnd = (uint32_t *)0x40100000; // interrupções pendentes em 1
+// uint32_t *iopmod = (uint32_t *)0x40100004;
+// uint32_t *iopdata = (uint32_t *)0x40100008;
+// uint32_t *intmod = (uint32_t *)0x4010000C; // 1 se IRQ, 0 se FIQ (rápida)
+// uint32_t *intmsk = (uint32_t *)0x40100010; // 1 se mascarado, 0 se habilitado
+// uint32_t *tmod = (uint32_t *)0x40100014;   // configuração dos temporizadores
+// uint32_t *tdata0 = (uint32_t *)0x40100018; // registrador de recarda do temp0
+// uint32_t *tcnt0 = (uint32_t *)0x4010001C;  // registrador da contagem atual do temp0
 
 const int8_t DisplayNumber[16] = {0b1011111, 0b0000110, 0b0111011, 0b0101111, 0b1100110, 0b1101101, 0b1111101, 0b0000111, 0b1111111, 0b1101111, 0b1110111, 0b1111100, 0b1011001, 0b0111110, 0b1111001, 0b1110001};
 
