@@ -14,7 +14,7 @@
  * @param args Os parâmetros que serão passados à função
  */
 
-void thread_create(uint32_t *threadId, uint8_t priority, void *(*routine)(void *), void *args);
+void thread_create(uint32_t *threadId, void *(*routine)(void *), void *args);
 
 /**
  * Verifica se há uma thread ativa com o threadId informado

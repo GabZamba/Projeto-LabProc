@@ -20,6 +20,7 @@ typedef struct
     uint32_t cpsr;
     uint8_t priority : 2; // prioridade (de 0 a 3)
     uint8_t tid;          // thread id
+    uint64_t timerCount;
 } tcb_t;
 
 typedef struct
@@ -30,7 +31,6 @@ typedef struct
     uint32_t end;
     tcb_t queue[BUFFER_SIZE];
     uint8_t quantumData;
-    uint8_t quantumCnt;
 } Buffer;
 
 typedef struct

@@ -85,6 +85,10 @@ void setTimer0Data(uint32_t value) { *tdata0 = value; }
 
 void resetTimer0Count(void) { *tcnt0 = *tdata0; }
 
+uint32_t getTimer0Count(void) { return *tcnt0; };
+
+uint32_t getTimer0Data(void) { return *tdata0; };
+
 void enableTimer0(void) { *tmod |= (0b1); }
 
 void disableTimer0(void) { *tmod &= (0b0); }
@@ -157,6 +161,6 @@ void gpio_init()
     enableGlobalInterrupt();
     setTimer0InterruptionMask(ENABLED);
 
-    setTimer0Data(TIMER_VALUE); // 1s
+    setTimer0Data(ONE_SECOND); // 1s
     enableTimer0();
 }

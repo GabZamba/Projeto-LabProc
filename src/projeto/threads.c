@@ -6,29 +6,25 @@
 #include "buffer.h"
 #include "threads.h"
 
-// Definidos pelo linker:
-extern uint8_t stack_svr[];
-extern uint8_t stack_usr[];
-
 extern Scheduler scheduler;
 
 extern tcb_t *curr_tcb; // tcb do thread atual
 
-volatile uint32_t count = 0;
-uint32_t nextTID(void) { return count++; }
+volatile uint32_t threadIdCounter = 0;
+uint32_t nextTID(void) { return threadIdCounter++; }
 
-typedef struct ThreadReturnListItem
+typedef struct ThreadReturnItem
 {
     void *data;
     uint32_t tid;
-    struct ThreadReturnListItem *prev;
-    struct ThreadReturnListItem *next;
-} ThreadReturnListItem;
+    struct ThreadReturnItem *prev;
+    struct ThreadReturnItem *next;
+} ThreadReturnItem;
 
 typedef struct
 {
-    ThreadReturnListItem *start;
-    ThreadReturnListItem *end;
+    ThreadReturnItem *start;
+    ThreadReturnItem *end;
 } ThreadReturnList;
 
 ThreadReturnList threadReturnList = {};
@@ -41,28 +37,26 @@ ThreadReturnList threadReturnList = {};
  * @param routine A função que a thread executará
  * @param args Os parâmetros que serão passados à função
  */
-void thread_create(uint32_t *threadId, uint8_t priority, void *(*routine)(void *), void *args)
+void thread_create(uint32_t *threadId, void *(*routine)(void *), void *args)
 {
     tcb_t newThread = {0};
     uint32_t tid = nextTID();
 
-    priority = (priority >= SCHEDULER_SIZE) ? SCHEDULER_SIZE - 1 : priority;
+    uint8_t *stack = (uint8_t *)malloc(4096 * sizeof(uint8_t));
 
     newThread.regs[0] = (uint32_t)args;
-    newThread.sp = (uint32_t)stack_usr + (4096 * tid);
+    newThread.sp = (uint32_t)stack + 4096;
     newThread.lr = (uint32_t)thread_exit;
     newThread.pc = (uint32_t)routine;
 
     newThread.cpsr = 0x10;
 
-    newThread.priority = priority;
+    newThread.priority = SCHEDULER_SIZE - 1;
     newThread.tid = tid;
 
     *threadId = tid;
 
-    Buffer *buffer = &scheduler.buffers[SCHEDULER_SIZE - 1 - priority];
-
-    enqueue(buffer, &newThread);
+    enqueue(&scheduler.buffers[0], &newThread);
 }
 
 /**
@@ -111,7 +105,7 @@ void save_return_pointer(void *returnPointer)
     if (returnPointer == NULL)
         return;
 
-    ThreadReturnListItem *item = (ThreadReturnListItem *)malloc(sizeof(ThreadReturnListItem));
+    ThreadReturnItem *item = (ThreadReturnItem *)malloc(sizeof(ThreadReturnItem));
     item->data = returnPointer;
     item->tid = curr_tcb->tid;
     item->next = NULL;
@@ -138,7 +132,7 @@ void save_return_pointer(void *returnPointer)
  */
 void *findThreadReturn(uint32_t thread_id)
 {
-    ThreadReturnListItem *ptr = threadReturnList.start;
+    ThreadReturnItem *ptr = threadReturnList.start;
     if (ptr == NULL)
         return NULL;
     while (ptr != NULL)

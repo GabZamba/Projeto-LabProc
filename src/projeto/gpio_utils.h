@@ -10,7 +10,7 @@ extern void delay(int);
 #define MASKED 1
 #define ENABLED 0
 
-#define TIMER_VALUE 50000000 // valor de recarga para 1s em 50 MHz
+#define ONE_SECOND 50000000 // valor de recarga para 1s em 50 MHz
 
 #define DELAY_TIME 10000000;
 
@@ -50,6 +50,10 @@ uint8_t setDisplayNumber(uint8_t num);
 void setTimer0Data(uint32_t value);
 
 void resetTimer0Count(void);
+
+uint32_t getTimer0Count(void);
+
+uint32_t getTimer0Data(void);
 
 void enableTimer0(void);
 
