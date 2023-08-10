@@ -30,7 +30,7 @@ typedef struct
     uint32_t start;
     uint32_t end;
     tcb_t queue[BUFFER_SIZE];
-    uint8_t quantumData;
+    uint8_t quantumSize;
 } Buffer;
 
 typedef struct
@@ -38,7 +38,7 @@ typedef struct
     Buffer buffers[SCHEDULER_SIZE];
 } Scheduler;
 
-void initBuffer(Buffer *buffer, uint8_t quantumData);
+void initBuffer(Buffer *buffer, uint8_t quantumSize);
 
 bool enqueue(Buffer *buffer, tcb_t *addedThread);
 

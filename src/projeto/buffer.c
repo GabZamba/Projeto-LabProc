@@ -11,7 +11,9 @@ void initBuffer(Buffer *buffer, uint8_t quantumData)
     buffer->end = 0;
     buffer->isEmpty = true;
     buffer->isFull = false;
-    buffer->quantumData = quantumData;
+    buffer->quantumSize = quantumSize;
+
+    return;
 }
 
 /* Enqueues the given tcb on the buffer */
