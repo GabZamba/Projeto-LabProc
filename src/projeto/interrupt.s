@@ -1,10 +1,10 @@
 .set INTPND, 0x03ff4004 // pending interruptions in 1
 @ .set INTPND, 0x40100000 // QEMU
 
-.set MODO_SVR, 0b10011
+.set SVR_MODE, 0b10011
 
 /**
- * Vetor de interrupções do ARM
+ * ARM Interruption Vector
  */
 .section .reset, "ax"
 .org 0
@@ -29,71 +29,60 @@ panic:
     b panic
 
 reset_addr: .word reset
-swi_addr:   .word trata_swi
-irq_addr:   .word trata_irq
+swi_addr:   .word treat_swi
+irq_addr:   .word treat_irq
 
 .text
-/*
- * Ponto de entrada após reset.
- */
 reset:
-    // Configura sp do modo SVR:
-    mov r0, #MODO_SVR
+    // Sets processor on SVR mode
+    mov r0, #SVR_MODE
     msr cpsr, r0
     ldr sp, =stack_svr
 
-    // Zera segmento .bss:
+    // Nulls .bss segment
     mov r0, #0
-    ldr r1, =inicio_bss
-    ldr r2, =fim_bss
+    ldr r1, =bss_start
+    ldr r2, =bss_end
 loop_zera:
     cmp r1, r2
     bge start
     str r0, [r1], #4
     b loop_zera
-
-/*
- * Ponto de entrada: executa o primeiro thread (tid = 0).
- */
 start:
     bl initializeScheduler
     bl gpio_init
     b context_change
+
 .global stop
 stop:
     b stop
 
-/*
- * Ponto de entrada do kernel.
- * Identifica a função solicitada e trata.
- */
-trata_swi:
-    cmp r0, #1          // função yield: troca de thread
+treat_swi:
+    cmp r0, #1          // yield: schedules next thread
     beq thread_switch
 
-    cmp r0, #2          // função getpid: retorna a identificação do thread atual
+    cmp r0, #2          // getpid: returns current threadId
     beq getid
 
-    cmp r0, #3          // função getpid: retorna a identificação do thread atual
+    cmp r0, #3          // thread_exit: destroys current thread
     beq close_thread
 
-    // outras funções do kernel vão aqui...
-    movs pc, lr          // retorna da interrupção
+    movs pc, lr         // returns from interruption
 
-trata_irq:
+treat_irq:
     push {r0-r2}
     ldr r0, =INTPND
     ldr r1, [r0]
 
-    ands r2, r1, #(1 << 10)         // verifica interrupção 10 (timer 0)
-    beq ack                         // se não houver, reconhece todas
+    // treat timer 0 interruption
+    ands r2, r1, #(1 << 10)         // checks interruption 10 (timer 0)
+    beq ack                         // if not pending, acknowledge all
 
-    str r2, [r0]                    // reconhece interrupção do timer
-    // tratamento da interrupção do timer 0
+    str r2, [r0]                    // acknowledge timer 0 interruption
     pop {r0-r2}
     b thread_switch
 
 ack:
-    str r1, [r0]                    // reconhece todas as interrupções
+    str r1, [r0]                    // acknowledge all pending interruptions
     pop {r0-r2}
-    subs pc, lr, #4                 // retorna do IRQ
+    subs pc, lr, #4                 // returns from IRQ

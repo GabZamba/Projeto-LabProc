@@ -10,42 +10,61 @@ extern void delay(int);
 #define MASKED 1
 #define ENABLED 0
 
-#define ONE_SECOND 50000000 // valor de recarga para 1s em 50 MHz
+// 1 second on 50 MHz
+#define ONE_SECOND 50000000
 
 #define DELAY_TIME 10000000;
 
+/**
+ *  GPIO
+ */
+
 uint8_t getSwitches(void);
 
-uint8_t getDisplay(void);
+/* 0 input, 1 output */
+void setDisplayMode(uint8_t mode);
 
 void clearDisplay(void);
 
+uint8_t getDisplay(void);
+
 void setDisplay(uint8_t value);
 
-uint8_t getLeds(void);
+/* Displays the given 7 bit binary, and returns the previous value */
+uint8_t changeDisplayValue(uint8_t value);
+
+/* Displays the given number, and returns the previous value */
+uint8_t changeDisplayNumber(uint8_t num);
+
+/* 0 input, 1 output */
+void setLedsMode(uint8_t mode);
 
 void clearLeds(void);
 
 void setLeds(uint8_t value);
 
-/* 0 entrada, 1 saída */
-void setLedsMode(uint8_t mode);
+uint8_t getLeds(void);
 
-/* 0 entrada, 1 saída */
-void setDisplayMode(uint8_t mode);
+/* Displays the given 4 bit binary on the leds, and returns the previous value */
+uint8_t changeLedsValue(uint8_t value);
+
+void gpio_init();
+
+/**
+ *  INTERRUPTIONS
+ */
 
 void enableGlobalInterrupt(void);
 
 void disableGlobalInterrupt(void);
 
-/* Displays the given 4 bit binary on the leds, and returns the previous value */
-uint8_t setLedsValue(uint8_t value);
+void setTimer0Interruption(uint8_t mode);
 
-/* Displays the given 7 bit binary, and returns the previous value */
-uint8_t setDisplayValue(uint8_t value);
+void setTimer0InterruptionMask(uint8_t mode); /* 0 enabled, 1 masked */
 
-/* Displays the given number, and returns the previous value */
-uint8_t setDisplayNumber(uint8_t num);
+/**
+ *  TIMER
+ */
 
 void setTimer0Data(uint32_t value);
 
@@ -58,16 +77,5 @@ uint32_t getTimer0Data(void);
 void enableTimer0(void);
 
 void disableTimer0(void);
-
-void blinkNumber(uint8_t num, uint32_t time);
-
-void blinkLeds(uint32_t value, uint32_t time);
-
-void setTimer0Interruption(uint8_t mode);
-
-/* 1 se mascarado, 0 se habilitado */
-void setTimer0InterruptionMask(uint8_t mode);
-
-void gpio_init();
 
 #endif

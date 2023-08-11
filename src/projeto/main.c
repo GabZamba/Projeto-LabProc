@@ -1,47 +1,45 @@
 
 #include <stdint.h>
+#include <stdlib.h>
 #include "threads.h"
 
-uint32_t mutex;
+volatile uint32_t a;
+
+void *func3(void *args)
+{
+   // for (int i = 0; i < 2000000; i++)
+   //    ;
+   // uint32_t *ptr = malloc(sizeof(uint32_t));
+   // *ptr = ++a;
+   // thread_exit(ptr);
+}
 
 void *func1(void *args)
 {
-
-   thread_mutex_lock(&mutex);
-   yield();
-   thread_mutex_unlock(&mutex);
-   for (int i = 0; i < 2; i++)
-      yield();
+   while (true)
+   {
+      for (int j = 0; j < 10; j++)
+      {
+         for (int i = 0; i < 200000; i++)
+            ;
+         thread_yield();
+      }
+      // return NULL;
+      // thread_create(NULL, func3, NULL);
+   }
 }
 
-void *func2(void *args) {}
-
-int main(void)
+void *func2(void *args)
 {
-   const int numThreads = 3;
-   uint8_t threadIds[3];
-   uint8_t threadToWaitFor;
+   while (true)
+      ;
+}
 
-   thread_create(&threadToWaitFor, NULL, func1, NULL);
+void *main(void *args)
+{
+   thread_create(NULL, func1, NULL); // tid 1
+   thread_create(NULL, func2, NULL); // tid 2
+   thread_create(NULL, func1, NULL); // tid 3
 
-   int i = 0;
-   for (i = 0; i < numThreads; i++)
-   {
-      thread_create(&threadIds[i], NULL, func2, NULL);
-   }
-   thread_mutex_lock(&mutex);
-   yield();
-   thread_mutex_unlock(&mutex);
-
-   thread_join(threadToWaitFor);
-   thread_exit();
-   func1(NULL);
-
-   tcb_t thread;
-   for (i = 0; i < numThreads; i++)
-   {
-      getThreadById(threadIds[i], &thread);
-   }
-
-   yield();
+   return NULL;
 }

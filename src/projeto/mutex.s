@@ -24,7 +24,7 @@ load_mutex:
 
 wait_for_unlock:   // Take appropriate action while waiting for mutex to become unlocked
     push    {r0, lr}
-    bl      yield
+    bl      thread_yield
     pop     {r0, lr}
     b       thread_mutex_lock           // Retry from 1
 

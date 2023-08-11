@@ -1,11 +1,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include <string.h> // Incluir o cabeçalho para a função memset
+#include <string.h> // Includes the header of the memset function
 #include "buffer.h"
 
-/* Initialize the Buffer */
-void initBuffer(Buffer *buffer, uint8_t quantumData)
+/* Initializes the Buffer */
+void initBuffer(Buffer *buffer, uint8_t quantumSize)
 {
     buffer->start = 0;
     buffer->end = 0;
@@ -22,7 +22,7 @@ bool enqueue(Buffer *buffer, tcb_t *addedThread)
     if (buffer->isFull)
         return false;
 
-    // enqueue
+    // enqueues the thread
     buffer->queue[buffer->end] = *addedThread;
 
     // calculates new end position
@@ -42,11 +42,12 @@ bool dequeue(Buffer *buffer, tcb_t *removedThread)
     if (buffer->isEmpty)
         return false;
 
-    // dequeue and save on pointer
+    // saves previous thread on pointer
     *removedThread = buffer->queue[buffer->start];
+    // resets memory of the previous thread
     buffer->queue[buffer->start] = (tcb_t){};
 
-    // calculates new end position
+    // calculates new start position
     buffer->start = (buffer->start + 1) % BUFFER_SIZE;
     buffer->isFull = false;
 

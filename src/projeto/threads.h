@@ -2,56 +2,54 @@
 #define THREADS_H
 
 #include <stdint.h>
-#include <string.h> // Incluir o cabeçalho para a função memset
 #include "buffer.h"
 
 /**
- * Cria uma nova thread, e a adiciona na fila de execução
+ * Creates a new thread, and adds it to the execution queue
  *
- * @param threadId O ID da thread (será retornado por esta)
- * @param priority A prioridade da thread (de 0 a 3, imutável)
- * @param routine A função que a thread executará
- * @param args Os parâmetros que serão passados à função
+ * @param threadId ID of the new thread (will be returned by the function)
+ * @param routine routine which will be executed by the thread
+ * @param args pointer to the function arguments
  */
-
 void thread_create(uint32_t *threadId, void *(*routine)(void *), void *args);
 
 /**
- * Verifica se há uma thread ativa com o threadId informado
+ * Destroys the current thread, scheduling the next one in the queue
  *
- * @param threadId O ID da thread
- * @param thread Os valores da thread serão retornados aqui
- * @return true se encontrou thread, false se não encontrou
+ * @param returnPointer pointer to the value to be returned by the thread
  */
-bool getThreadById(uint32_t threadId, tcb_t *thread);
+void thread_exit(void *returnPointer);
 
 /**
- * Destrói a thread atual, executando a próxima na fila.
- */
-void thread_exit(void);
-
-/**
- * Faz a thread atual esperar o término da execução da thread com id thread_id
+ * Makes the current thread wait for the execution of the thread with the given id
  *
- * @param thread_id O ID da thread
- * @param thread_return Ponteiro para o valor retornado pela thread passada
+ * @param threadId thread to wait for the end of the execution
+ * @param threadReturn pointer which will contain the return value of the thread
  */
-void thread_join(uint32_t thread_id, void **thread_return);
-
-extern void thread_mutex_lock(void *mutex);
-
-extern void thread_mutex_unlock(void *mutex);
-
-// Chamadas do kernel
+void thread_join(uint32_t threadId, void **threadReturn);
 
 /**
- * Devolve o controle ao sistema executivo, que pode escalar outro thread.
+ * A simple mutex lock
+ *
+ * @param mutex address of the mutex
  */
-void yield(void);
+void thread_mutex_lock(void *mutex);
 
 /**
- * Retorna o threadId da thread atual
+ * A simple mutex unlock
+ *
+ * @param mutex address of the mutex
  */
-int getpid(void);
+void thread_mutex_unlock(void *mutex);
+
+/**
+ * Returns the control to the thread scheduler, scheduling the next one in the queue
+ */
+void thread_yield(void);
+
+/**
+ * Retorns the Id of the current thread
+ */
+uint8_t get_tid(void);
 
 #endif

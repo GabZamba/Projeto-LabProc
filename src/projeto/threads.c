@@ -1,6 +1,6 @@
 
 #include <stdint.h>
-#include <string.h> // Incluir o cabeçalho para a função memset
+#include <string.h> // Includes the header of the memset function
 #include <stdio.h>
 #include <stdlib.h>
 #include "buffer.h"
@@ -8,7 +8,7 @@
 
 extern Scheduler scheduler;
 
-extern tcb_t *curr_tcb; // tcb do thread atual
+extern tcb_t *curr_tcb; // current thread tcb
 
 volatile uint32_t threadIdCounter = 0;
 uint32_t nextTID(void) { return threadIdCounter++; }
@@ -30,12 +30,11 @@ typedef struct
 ThreadReturnList threadReturnList = {};
 
 /**
- * Cria uma nova thread, e a adiciona na fila de execução
+ * Creates a new thread, and adds it to the execution queue
  *
- * @param threadId O ID da thread (será retornado por esta)
- * @param priority A prioridade da thread (de 0 a 3, imutável)
- * @param routine A função que a thread executará
- * @param args Os parâmetros que serão passados à função
+ * @param threadId ID of the new thread (will be returned by the function)
+ * @param routine routine which will be executed by the thread
+ * @param args pointer to the function arguments
  */
 void thread_create(uint32_t *threadId, void *(*routine)(void *), void *args)
 {
@@ -54,71 +53,82 @@ void thread_create(uint32_t *threadId, void *(*routine)(void *), void *args)
     newThread.priority = SCHEDULER_SIZE - 1;
     newThread.tid = tid;
 
-    *threadId = tid;
+    if (threadId != NULL)
+        *threadId = tid;
 
     enqueue(&scheduler.buffers[0], &newThread);
 }
 
 /**
- * Verifica se há uma thread ativa com o threadId informado
+ * Checks if there is an active thread with the given id
  *
- * @param threadId O ID da thread
- * @param thread Os valores da thread serão retornados aqui
- * @return true se encontrou thread, false se não encontrou
+ * @param threadId id of the thread to be found
+ * @param thread the properties of the thread to be found (will be returned by this function)
+ * @return true if thread has been found, false if not
  */
 bool getThreadById(uint32_t threadId, tcb_t *thread)
 {
     Buffer currBuffer;
+
     for (int i = 0; i < SCHEDULER_SIZE; i++)
     {
         currBuffer = scheduler.buffers[i];
+
         if (currBuffer.isEmpty)
             continue;
-        // itera sobre o buffer
+
+        // try to find the thread on the current buffer
         for (int j = 0; j < BUFFER_SIZE; j++)
         {
-            // retorna se o tid for igual
             if (currBuffer.queue[j].tid == threadId)
             {
-                if (thread != NULL) // retorna o valor se o ponteiro não for nulo
+                if (thread != NULL) // returns thread tcb if given pointer is not NULL
                     *thread = currBuffer.queue[j];
                 return true;
             }
         }
     }
+
+    *thread = (tcb_t){};
     return false;
 }
 
 /**
- * Destrói a thread atual, executando a próxima na fila.
+ * Destroys the current thread, scheduling the next one in the queue
+ *
+ * @param returnPointer pointer to the value to be returned by the thread
  */
-void __attribute__((naked)) thread_exit(void)
+void __attribute__((naked)) thread_exit(void *returnPointer)
 {
     asm volatile(
-        "mov r1, r0 \n\t" // salva o ponteiro retornado em R1
-        "mov r0, #3 \n\t" // #3 é o valor para sair de uma thread pelo swi
+        "mov r1, r0 \n\t" // saves the return pointer on R1
+        "mov r0, #3 \n\t" // #3 is the value on swi to destroy a thread
         "swi #0     \n\t");
 }
 
+/**
+ * Saves the return of a completed thread, if not NULL, on the threadReturnList
+ */
 void save_return_pointer(void *returnPointer)
 {
     if (returnPointer == NULL)
         return;
 
     ThreadReturnItem *item = (ThreadReturnItem *)malloc(sizeof(ThreadReturnItem));
+
     item->data = returnPointer;
     item->tid = curr_tcb->tid;
     item->next = NULL;
     item->prev = NULL;
 
-    // se a lista está vazia
+    // if the linked list is empty
     if (threadReturnList.start == NULL)
-    { // define início e fim da lista
+    { // sets the start and end
         threadReturnList.start = item;
         threadReturnList.end = item;
     }
     else
-    { // insere no final da lista
+    { // inserts in the end
         item->prev = threadReturnList.end;
         threadReturnList.end->next = item;
         threadReturnList.end = item;
@@ -126,15 +136,12 @@ void save_return_pointer(void *returnPointer)
 }
 
 /**
- * Procura na lista de retornos de thread o ponteiro retornado pela thread especificada
- *
- * @param thread_id O ID da thread
+ * Searches the threadReturnList for the return of the given thread
  */
 void *findThreadReturn(uint32_t thread_id)
 {
     ThreadReturnItem *ptr = threadReturnList.start;
-    if (ptr == NULL)
-        return NULL;
+
     while (ptr != NULL)
     {
         if (ptr->tid == thread_id)
@@ -142,30 +149,43 @@ void *findThreadReturn(uint32_t thread_id)
         else
             ptr = ptr->next;
     }
+
     return NULL;
 }
 
 /**
- * Faz a thread atual esperar o término da execução da thread com id thread_id
+ * Makes the current thread wait for the execution of the thread with the given id
  *
- * @param thread_id O ID da thread
- * @param thread_return Ponteiro para o valor retornado pela thread passada
+ * @param threadId thread to wait for the end of the execution
+ * @param threadReturn pointer which will contain the return value of the thread
  */
-void thread_join(uint32_t thread_id, void **thread_return)
+void thread_join(uint32_t threadId, void **threadReturn)
 {
-    while (getThreadById(thread_id, NULL))
-    {
-        yield();
-    };
-    *thread_return = findThreadReturn(thread_id);
+    while (getThreadById(threadId, NULL))
+        thread_yield();
+
+    *threadReturn = findThreadReturn(threadId);
     return;
 }
 
 /**
- * Chama o kernel com swi, a função "yield" (r0 = 1).
- * Devolve o controle ao sistema executivo, que pode escalar outro thread.
+ * A simple mutex lock
+ *
+ * @param mutex address of the mutex
  */
-void __attribute__((naked)) yield(void)
+extern void thread_mutex_lock(void *mutex);
+
+/**
+ * A simple mutex unlock
+ *
+ * @param mutex address of the mutex
+ */
+extern void thread_mutex_unlock(void *mutex);
+
+/**
+ * Returns the control to the thread scheduler
+ */
+void __attribute__((naked)) thread_yield(void)
 {
     asm volatile(
         "push {lr}  \n\t"
@@ -175,9 +195,9 @@ void __attribute__((naked)) yield(void)
 }
 
 /**
- * Retorna o thread-id do thread atual.
+ * Returns the id of the current thread
  */
-int __attribute__((naked)) getpid(void)
+uint8_t __attribute__((naked)) get_tid(void)
 {
     asm volatile(
         "push {lr}  \n\t"
