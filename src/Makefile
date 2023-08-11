@@ -3,7 +3,17 @@
 # Source files list
 #  Include your files here
 #
-FONTES = interrupt.s stubs.c mutex.s context_change.s aux.s gpio_utils.c buffer.c sched.c main.c threads.c
+SRC = \
+	asm/interrupt.s			\
+	asm/context_change.s	\
+	asm/aux.s				\
+	asm/mutex.s				\
+	c/stubs.c				\
+	c/gpio_utils.c			\
+	c/buffer.c				\
+	c/sched.c				\
+	c/threads.c				\
+	main.c
 
 BREAKPOINTS= reset panic stop
 
@@ -16,13 +26,13 @@ INIT_CODE= reset
 EXEC = kernel.elf
 MAP = kernel.map
 
-PREFIXO = arm-none-eabi-
+PREFIX = arm-none-eabi-
 LDSCRIPT = kernel.ld
-AS = ${PREFIXO}as
-LD = ${PREFIXO}ld
-GCC = ${PREFIXO}gcc
-OBJ = $(FONTES:.s=.o)
-OBJETOS = $(OBJ:.c=.o)
+AS = ${PREFIX}as
+LD = ${PREFIX}ld
+GCC = ${PREFIX}gcc
+OBJ = $(SRC:.s=.o)
+OBJECTS = $(OBJ:.c=.o)
 
 #
 # C compiler options
@@ -38,8 +48,8 @@ LDOPTS += -lc -lgcc
 #
 # generate executable file
 #
-${EXEC}: ${OBJETOS}
-	${LD} -T ${LDSCRIPT} -M=${MAP} ${OBJETOS} ${LDOPTS} -o $@
+${EXEC}: ${OBJECTS}
+	${LD} -T ${LDSCRIPT} -M=${MAP} ${OBJECTS} ${LDOPTS} -o $@
 
 #
 # Compile C files
@@ -57,14 +67,14 @@ ${EXEC}: ${OBJETOS}
 # Clean all object files
 #
 clean:
-	rm -f *.o ${EXEC} ${MAP}
+	rm -f *.o */*.o ${EXEC} ${MAP}
 
 #
 # Initialize QEMU
 #
 qemu: ${EXEC}
 	@if lsof -Pi :1234 >/dev/null ; then\
-		echo "qemu já está executando"; \
+		echo "qemu is already executing"; \
 	else qemu-system-arm -s -M virt & \
 	fi
 
@@ -73,7 +83,7 @@ qemu: ${EXEC}
 #
 ocd: 
 	@if pgrep openocd >/dev/null ; then\
-		echo "openocd já está executando"; \
+		echo "openocd is already executing"; \
 	else openocd -f evaluator7t.cfg & \
 	fi
 
