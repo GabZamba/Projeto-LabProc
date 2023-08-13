@@ -28,7 +28,7 @@ typedef struct
     bool isFull;
     uint32_t start;
     uint32_t end;
-    tcb_t queue[BUFFER_SIZE];
+    tcb_t *queue[BUFFER_SIZE]; // array of pointers
     uint8_t quantumSize;
 } Buffer;
 
@@ -57,8 +57,8 @@ bool enqueue(Buffer *buffer, tcb_t *addedThread);
  * Dequeues the buffer and saves the value on the given thread pointer
  *
  * @param buffer pointer to the buffer in which the first thread will be dequeued
- * @param addedThread pointer which will contain the dequeued thread
+ * @param removedThread pointer which will contain the dequeued thread
  */
-bool dequeue(Buffer *buffer, tcb_t *removedThread);
+bool dequeue(Buffer *buffer, tcb_t **removedThread);
 
 #endif

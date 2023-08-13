@@ -23,7 +23,7 @@ bool enqueue(Buffer *buffer, tcb_t *addedThread)
         return false;
 
     // enqueues the thread
-    buffer->queue[buffer->end] = *addedThread;
+    buffer->queue[buffer->end] = addedThread;
 
     // calculates new end position
     buffer->end = (buffer->end + 1) % BUFFER_SIZE;
@@ -37,15 +37,15 @@ bool enqueue(Buffer *buffer, tcb_t *addedThread)
 }
 
 /* Dequeues the buffer and saves the value on the given tcb */
-bool dequeue(Buffer *buffer, tcb_t *removedThread)
+bool dequeue(Buffer *buffer, tcb_t **removedThread)
 {
     if (buffer->isEmpty)
         return false;
 
     // saves previous thread on pointer
     *removedThread = buffer->queue[buffer->start];
-    // resets memory of the previous thread
-    buffer->queue[buffer->start] = (tcb_t){};
+    // resets pointer of the previous thread
+    buffer->queue[buffer->start] = NULL;
 
     // calculates new start position
     buffer->start = (buffer->start + 1) % BUFFER_SIZE;

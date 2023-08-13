@@ -38,25 +38,26 @@ ThreadReturnList threadReturnList = {};
  */
 void thread_create(uint32_t *threadId, void *(*routine)(void *), void *args)
 {
-    tcb_t newThread = {0};
+    tcb_t *newThread = (tcb_t*)malloc(sizeof(tcb_t));
+    *newThread = (tcb_t){};
     uint32_t tid = nextTID();
 
     uint8_t *stack = (uint8_t *)malloc(4096 * sizeof(uint8_t));
 
-    newThread.regs[0] = (uint32_t)args;
-    newThread.sp = (uint32_t)stack + 4096;
-    newThread.lr = (uint32_t)thread_exit;
-    newThread.pc = (uint32_t)routine;
+    newThread->regs[0] = (uint32_t)args;
+    newThread->sp = (uint32_t)stack + 4096;
+    newThread->lr = (uint32_t)thread_exit;
+    newThread->pc = (uint32_t)routine;
 
-    newThread.cpsr = 0x10;
+    newThread->cpsr = 0x10;
 
-    newThread.priority = SCHEDULER_SIZE - 1;
-    newThread.tid = tid;
+    newThread->priority = SCHEDULER_SIZE - 1;
+    newThread->tid = tid;
 
     if (threadId != NULL)
         *threadId = tid;
 
-    enqueue(&scheduler.buffers[0], &newThread);
+    enqueue(&scheduler.buffers[0], newThread);
 }
 
 /**
@@ -80,10 +81,10 @@ bool getThreadById(uint32_t threadId, tcb_t *thread)
         // try to find the thread on the current buffer
         for (int j = 0; j < BUFFER_SIZE; j++)
         {
-            if (currBuffer.queue[j].tid == threadId)
+            if (currBuffer.queue[j]->tid == threadId)
             {
                 if (thread != NULL) // returns thread tcb if given pointer is not NULL
-                    *thread = currBuffer.queue[j];
+                    *thread = *currBuffer.queue[j];
                 return true;
             }
         }

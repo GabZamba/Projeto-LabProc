@@ -4,6 +4,7 @@
 #include "gpio_utils.h"
 #include "buffer.h"
 #include "threads.h"
+#include "stdlib.h"
 
 Scheduler scheduler = {};
 
@@ -41,14 +42,15 @@ void getNextThread(Buffer **nextBuffer, tcb_t **nextThread)
         if ((*nextBuffer)->isEmpty)
             continue;
 
-        *nextThread = &((*nextBuffer)->queue[(*nextBuffer)->start]);
+        *nextThread = (*nextBuffer)->queue[(*nextBuffer)->start];
 
         return;
     }
 
     // if all buffers are empty, the next thread will return to reset (pc = lr = 0)
+
     *nextBuffer = &buffers[0];
-    *nextThread = &((*nextBuffer)->queue[(*nextBuffer)->start]);
+    *nextThread = (*nextBuffer)->queue[(*nextBuffer)->start];
     (*nextThread)->cpsr = 0x13;
     return;
 }
@@ -70,7 +72,7 @@ void initializeScheduler(void)
 void resetThreadPriorities(void)
 {
     Buffer *bufferPtr;
-    tcb_t thread;
+    tcb_t *thread;
 
     resetPriorityCount = 0;
     // move all threads to the highest priority queue
@@ -84,8 +86,8 @@ void resetThreadPriorities(void)
         for (int j = 0; j < BUFFER_SIZE; j++)
         {
             dequeue(bufferPtr, &thread);
-            thread.priority = SCHEDULER_SIZE - 1; // sets priority to max
-            enqueue(&scheduler.buffers[0], &thread);
+            thread->priority = SCHEDULER_SIZE - 1; // sets priority to max
+            enqueue(&scheduler.buffers[0], thread);
 
             if (bufferPtr->isEmpty)
                 break;
@@ -103,7 +105,7 @@ void schedule(bool enqueueAgain, bool wasPreempted)
 {
     disableTimer0();
 
-    tcb_t prev_tcb;
+    tcb_t *prev_tcb;
     uint32_t timerData, timerDiff;
 
     // dequeues current thread and saves on prev_tcb
@@ -114,20 +116,25 @@ void schedule(bool enqueueAgain, bool wasPreempted)
     timerDiff = wasPreempted ? timerData : (timerData - getTimer0Count());
 
     // if has already used one quantum of time, decreases the priority
-    prev_tcb.timerCount += timerDiff;
-    if (prev_tcb.timerCount >= timerData)
+    prev_tcb->timerCount += timerDiff;
+    if (prev_tcb->timerCount >= timerData)
     {
-        if (prev_tcb.priority > 0) // decreases if not already at minimum
-            prev_tcb.priority--;
-        prev_tcb.timerCount = 0;
+        if (prev_tcb->priority > 0) // decreases if not already at minimum
+            prev_tcb->priority--;
+        prev_tcb->timerCount = 0;
     }
 
-    if (enqueueAgain)
+    if (!enqueueAgain)
     {
-        uint32_t bufferIndex = SCHEDULER_SIZE - 1 - prev_tcb.priority;
+        free(prev_tcb);
+    }
+    else
+    {
+        // max priority = index 0, min priority = index 3
+        uint32_t bufferIndex = SCHEDULER_SIZE - 1 - prev_tcb->priority;
         Buffer *bufferToEnqueueIn = &scheduler.buffers[bufferIndex];
 
-        if (!enqueue(bufferToEnqueueIn, &prev_tcb))
+        if (!enqueue(bufferToEnqueueIn, prev_tcb))
             stop();
     }
 
