@@ -10,7 +10,7 @@
 /**
  * Thread Control Block (TCB) structure
  */
-typedef struct
+typedef struct tcb_t
 {
     uint32_t regs[13]; // r0-r12
     uint32_t sp;
@@ -20,15 +20,13 @@ typedef struct
     uint8_t priority : 2; // priority, 0 (min) to 3 (max)
     uint8_t tid;          // thread id
     uint64_t timerCount;
+    struct tcb_t *next;
 } tcb_t;
 
 typedef struct
 {
-    bool isEmpty;
-    bool isFull;
-    uint32_t start;
-    uint32_t end;
-    tcb_t *queue[BUFFER_SIZE]; // array of pointers
+    tcb_t *start;
+    tcb_t *end;
     uint8_t quantumSize;
 } Buffer;
 

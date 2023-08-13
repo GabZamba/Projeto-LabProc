@@ -7,10 +7,8 @@
 /* Initializes the Buffer */
 void initBuffer(Buffer *buffer, uint8_t quantumSize)
 {
-    buffer->start = 0;
-    buffer->end = 0;
-    buffer->isEmpty = true;
-    buffer->isFull = false;
+    buffer->start = NULL;
+    buffer->end = NULL;
     buffer->quantumSize = quantumSize;
 
     return;
@@ -19,19 +17,22 @@ void initBuffer(Buffer *buffer, uint8_t quantumSize)
 /* Enqueues the given tcb on the buffer */
 bool enqueue(Buffer *buffer, tcb_t *addedThread)
 {
-    if (buffer->isFull)
-        return false;
+    tcb_t *aux;
 
-    // enqueues the thread
-    buffer->queue[buffer->end] = addedThread;
+    addedThread->next = NULL;
 
-    // calculates new end position
-    buffer->end = (buffer->end + 1) % BUFFER_SIZE;
-    buffer->isEmpty = false;
+    // if buffer is empty, enqueues at first position
+    if (buffer->start == NULL)
+    {
+        buffer->start = addedThread;
+        buffer->end = addedThread;
+        return true;
+    }
 
-    // checks if buffer is full
-    if (buffer->start == buffer->end)
-        buffer->isFull = true;
+    // inserts at the end of the queue
+    aux = buffer->end;
+    aux->next = addedThread;
+    buffer->end = addedThread;
 
     return true;
 }
@@ -39,21 +40,15 @@ bool enqueue(Buffer *buffer, tcb_t *addedThread)
 /* Dequeues the buffer and saves the value on the given tcb */
 bool dequeue(Buffer *buffer, tcb_t **removedThread)
 {
-    if (buffer->isEmpty)
+    if (buffer->start == NULL)
         return false;
 
-    // saves previous thread on pointer
-    *removedThread = buffer->queue[buffer->start];
-    // resets pointer of the previous thread
-    buffer->queue[buffer->start] = NULL;
+    *removedThread = buffer->start;
 
-    // calculates new start position
-    buffer->start = (buffer->start + 1) % BUFFER_SIZE;
-    buffer->isFull = false;
+    // dequeues from buffer
+    buffer->start = buffer->start->next;
 
-    // checks if buffer is empty
-    if (buffer->start == buffer->end)
-        buffer->isEmpty = true;
+    (*removedThread)->next = NULL;
 
     return true;
 }

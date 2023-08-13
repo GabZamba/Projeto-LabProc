@@ -39,19 +39,20 @@ void getNextThread(Buffer **nextBuffer, tcb_t **nextThread)
         *nextBuffer = &buffers[i];
 
         // se estiver vazio, vai à próxima iteração
-        if ((*nextBuffer)->isEmpty)
+        if ((*nextBuffer)->start == NULL)
             continue;
 
-        *nextThread = (*nextBuffer)->queue[(*nextBuffer)->start];
+        *nextThread = (*nextBuffer)->start;
 
         return;
     }
 
     // if all buffers are empty, the next thread will return to reset (pc = lr = 0)
+    ThreadProperties tp = (ThreadProperties){cpsr : 0x13};
+    thread_create(NULL, &tp, NULL, NULL);
 
     *nextBuffer = &buffers[0];
-    *nextThread = (*nextBuffer)->queue[(*nextBuffer)->start];
-    (*nextThread)->cpsr = 0x13;
+    *nextThread = (*nextBuffer)->start;
     return;
 }
 
@@ -60,7 +61,7 @@ void initializeScheduler(void)
     for (int i = 0; i < SCHEDULER_SIZE; i++)
         initBuffer(&(scheduler.buffers[i]), quantumData[i]);
 
-    thread_create(NULL, main, NULL);
+    thread_create(NULL, NULL, main, NULL);
 
     getNextThread(&curr_buffer, &curr_tcb);
 
@@ -80,7 +81,7 @@ void resetThreadPriorities(void)
     {
         bufferPtr = &scheduler.buffers[i];
 
-        if (bufferPtr->isEmpty)
+        if (bufferPtr->start == NULL)
             continue;
 
         for (int j = 0; j < BUFFER_SIZE; j++)
@@ -89,7 +90,7 @@ void resetThreadPriorities(void)
             thread->priority = SCHEDULER_SIZE - 1; // sets priority to max
             enqueue(&scheduler.buffers[0], thread);
 
-            if (bufferPtr->isEmpty)
+            if (bufferPtr->start == NULL)
                 break;
         }
     }

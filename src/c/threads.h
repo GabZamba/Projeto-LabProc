@@ -4,6 +4,11 @@
 #include <stdint.h>
 #include "buffer.h"
 
+typedef struct
+{
+    uint32_t cpsr;
+} ThreadProperties;
+
 /**
  * Creates a new thread, and adds it to the execution queue
  *
@@ -11,7 +16,7 @@
  * @param routine routine which will be executed by the thread
  * @param args pointer to the function arguments
  */
-void thread_create(uint32_t *threadId, void *(*routine)(void *), void *args);
+void thread_create(uint32_t *threadId, ThreadProperties *threadProperties, void *(*routine)(void *), void *args);
 
 /**
  * Destroys the current thread, scheduling the next one in the queue

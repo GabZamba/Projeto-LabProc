@@ -36,9 +36,9 @@ ThreadReturnList threadReturnList = {};
  * @param routine routine which will be executed by the thread
  * @param args pointer to the function arguments
  */
-void thread_create(uint32_t *threadId, void *(*routine)(void *), void *args)
+void thread_create(uint32_t *threadId, ThreadProperties *threadProperties, void *(*routine)(void *), void *args)
 {
-    tcb_t *newThread = (tcb_t*)malloc(sizeof(tcb_t));
+    tcb_t *newThread = (tcb_t *)malloc(sizeof(tcb_t));
     *newThread = (tcb_t){};
     uint32_t tid = nextTID();
 
@@ -49,10 +49,11 @@ void thread_create(uint32_t *threadId, void *(*routine)(void *), void *args)
     newThread->lr = (uint32_t)thread_exit;
     newThread->pc = (uint32_t)routine;
 
-    newThread->cpsr = 0x10;
+    newThread->cpsr = threadProperties == NULL ? 0x10 : threadProperties->cpsr;
 
     newThread->priority = SCHEDULER_SIZE - 1;
     newThread->tid = tid;
+    newThread->next = NULL;
 
     if (threadId != NULL)
         *threadId = tid;
@@ -70,21 +71,22 @@ void thread_create(uint32_t *threadId, void *(*routine)(void *), void *args)
 bool getThreadById(uint32_t threadId, tcb_t *thread)
 {
     Buffer currBuffer;
+    tcb_t *aux;
 
     for (int i = 0; i < SCHEDULER_SIZE; i++)
     {
         currBuffer = scheduler.buffers[i];
 
-        if (currBuffer.isEmpty)
+        if (currBuffer.start == NULL)
             continue;
 
         // try to find the thread on the current buffer
-        for (int j = 0; j < BUFFER_SIZE; j++)
+        for (aux = currBuffer.start; aux != NULL; aux = aux->next)
         {
-            if (currBuffer.queue[j]->tid == threadId)
+            if (aux->tid == threadId)
             {
                 if (thread != NULL) // returns thread tcb if given pointer is not NULL
-                    *thread = *currBuffer.queue[j];
+                    *thread = *aux;
                 return true;
             }
         }
