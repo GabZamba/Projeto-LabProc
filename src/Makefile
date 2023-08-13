@@ -6,7 +6,6 @@
 SRC = \
 	asm/interrupt.s			\
 	asm/context_change.s	\
-	asm/aux.s				\
 	asm/mutex.s				\
 	c/stubs.c				\
 	c/gpio_utils.c			\

@@ -77,3 +77,12 @@ close_thread:
     mov r1, #0          // wasPreempted = false
     bl schedule
     b context_change
+
+/*
+ * Função utilitária delay.
+ */
+.global delay
+delay:
+   subs r0, r0, #1
+   bne delay
+   mov pc, lr
