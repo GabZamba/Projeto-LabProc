@@ -91,7 +91,8 @@ bool findActiveThreadById(uint32_t threadId, tcb_t *thread)
         }
     }
 
-    *thread = (tcb_t){};
+    if (thread != NULL)
+        *thread = (tcb_t){};
     return false;
 }
 
@@ -164,7 +165,8 @@ void thread_join(uint32_t threadId, void **threadReturn)
     while (findActiveThreadById(threadId, NULL))
         thread_yield();
 
-    *threadReturn = findThreadReturn(threadId);
+    if (threadReturn != NULL)
+        *threadReturn = findThreadReturn(threadId);
     return;
 }
 
