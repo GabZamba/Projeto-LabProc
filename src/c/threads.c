@@ -13,18 +13,17 @@ extern tcb_t *curr_tcb; // current thread tcb
 volatile uint32_t threadIdCounter = 0;
 uint32_t nextTID(void) { return threadIdCounter++; }
 
-typedef struct ThreadReturnItem
+typedef struct ThreadReturn
 {
     void *data;
     uint32_t tid;
-    struct ThreadReturnItem *prev;
-    struct ThreadReturnItem *next;
-} ThreadReturnItem;
+    struct ThreadReturn *next;
+} ThreadReturn;
 
 typedef struct
 {
-    ThreadReturnItem *start;
-    ThreadReturnItem *end;
+    ThreadReturn *start;
+    ThreadReturn *end;
 } ThreadReturnList;
 
 ThreadReturnList threadReturnList = {};
@@ -68,15 +67,15 @@ void thread_create(uint32_t *threadId, ThreadProperties *threadProperties, void 
  * @param thread the properties of the thread to be found (will be returned by this function)
  * @return true if thread has been found, false if not
  */
-bool getThreadById(uint32_t threadId, tcb_t *thread)
+bool findActiveThreadById(uint32_t threadId, tcb_t *thread)
 {
     Buffer currBuffer;
     tcb_t *aux;
 
     for (int i = 0; i < SCHEDULER_SIZE; i++)
     {
+        // checks if buffer is not empty
         currBuffer = scheduler.buffers[i];
-
         if (currBuffer.start == NULL)
             continue;
 
@@ -117,12 +116,11 @@ void save_return_pointer(void *returnPointer)
     if (returnPointer == NULL)
         return;
 
-    ThreadReturnItem *item = (ThreadReturnItem *)malloc(sizeof(ThreadReturnItem));
+    ThreadReturn *item = (ThreadReturn *)malloc(sizeof(ThreadReturn));
 
     item->data = returnPointer;
     item->tid = curr_tcb->tid;
     item->next = NULL;
-    item->prev = NULL;
 
     // if the linked list is empty
     if (threadReturnList.start == NULL)
@@ -132,7 +130,6 @@ void save_return_pointer(void *returnPointer)
     }
     else
     { // inserts in the end
-        item->prev = threadReturnList.end;
         threadReturnList.end->next = item;
         threadReturnList.end = item;
     }
@@ -143,7 +140,7 @@ void save_return_pointer(void *returnPointer)
  */
 void *findThreadReturn(uint32_t thread_id)
 {
-    ThreadReturnItem *ptr = threadReturnList.start;
+    ThreadReturn *ptr = threadReturnList.start;
 
     while (ptr != NULL)
     {
@@ -164,7 +161,7 @@ void *findThreadReturn(uint32_t thread_id)
  */
 void thread_join(uint32_t threadId, void **threadReturn)
 {
-    while (getThreadById(threadId, NULL))
+    while (findActiveThreadById(threadId, NULL))
         thread_yield();
 
     *threadReturn = findThreadReturn(threadId);

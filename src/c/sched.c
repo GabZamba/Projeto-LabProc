@@ -37,13 +37,10 @@ void getNextThread(Buffer **nextBuffer, tcb_t **nextThread)
     {
         // find the first non-empty buffer
         *nextBuffer = &buffers[i];
-
-        // se estiver vazio, vai à próxima iteração
         if ((*nextBuffer)->start == NULL)
             continue;
 
         *nextThread = (*nextBuffer)->start;
-
         return;
     }
 
@@ -84,23 +81,19 @@ void resetThreadPriorities(void)
         if (bufferPtr->start == NULL)
             continue;
 
-        for (int j = 0; j < BUFFER_SIZE; j++)
+        while (dequeue(bufferPtr, &thread))
         {
-            dequeue(bufferPtr, &thread);
             thread->priority = SCHEDULER_SIZE - 1; // sets priority to max
             enqueue(&scheduler.buffers[0], thread);
-
-            if (bufferPtr->start == NULL)
-                break;
         }
     }
 }
 
 /**
- * Escalador: escolhe o próximo thread.
+ * Scheduler: chooses next executing thread
  *
- * @param enqueueAgain Boolean que indica se a thread atual deve ou não ser reenfileirada
- * @param wasPreempted Boolean que indica se a thread atual foi interrompida por temporizador (true) ou por yield (false)
+ * @param enqueueAgain indicates if current thread will be requeued
+ * @param wasPreempted indicates if current thread has been interrupted by timer (true), or has yielded control (false)
  */
 void schedule(bool enqueueAgain, bool wasPreempted)
 {

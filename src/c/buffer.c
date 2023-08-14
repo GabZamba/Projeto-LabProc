@@ -17,8 +17,6 @@ void initBuffer(Buffer *buffer, uint8_t quantumSize)
 /* Enqueues the given tcb on the buffer */
 bool enqueue(Buffer *buffer, tcb_t *addedThread)
 {
-    tcb_t *aux;
-
     addedThread->next = NULL;
 
     // if buffer is empty, enqueues at first position
@@ -30,8 +28,7 @@ bool enqueue(Buffer *buffer, tcb_t *addedThread)
     }
 
     // inserts at the end of the queue
-    aux = buffer->end;
-    aux->next = addedThread;
+    buffer->end->next = addedThread;
     buffer->end = addedThread;
 
     return true;
@@ -47,6 +44,8 @@ bool dequeue(Buffer *buffer, tcb_t **removedThread)
 
     // dequeues from buffer
     buffer->start = buffer->start->next;
+    if (buffer->start == NULL)
+        buffer->end = NULL;
 
     (*removedThread)->next = NULL;
 
