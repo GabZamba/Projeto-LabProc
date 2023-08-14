@@ -1,5 +1,4 @@
-.set INTPND, 0x03ff4004 // pending interruptions in 1
-@ .set INTPND, 0x40100000 // QEMU
+.include "evlt7t.inc"
 
 .set SVR_MODE, 0b10011
 

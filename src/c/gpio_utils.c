@@ -7,29 +7,30 @@
 extern void delay(int);
 
 /* Evaluator 7T */
-// uint32_t *intpnd = INTPND; // pending interruptions in 1
-// uint32_t *intmod = INTMOD; // 1 IRQ, 0 FIQ (fast)
-// uint32_t *intmsk = INTMSK; // 1 masked, 0 enabled
+uint32_t *intmod = INTMOD; // 1 IRQ, 0 FIQ (fast)
+uint32_t *intpnd = INTPND; // pending interruptions in 1
+uint32_t *intmsk = INTMSK; // 1 masked, 0 enabled
 
-// uint32_t *iopmod = IOPMOD;   // GPIO configuration
-// uint32_t *iopdata = IOPDATA; // GPIO values
+uint32_t *iopmod = IOPMOD;   // GPIO configuration
+uint32_t *iopdata = IOPDATA; // GPIO values
 
-// uint32_t *tmod = TMOD;     // timer configuration
-// uint32_t *tdata0 = TDATA0; // recharge register of timer 0
-// uint32_t *tcnt0 = TCNT0;   // count register of timer 0
+uint32_t *tmod = TMOD;     // timer configuration
+uint32_t *tdata0 = TDATA0; // recharge register of timer 0
+uint32_t *tcnt0 = TCNT0;   // count register of timer 0
 
 /* QEMU */
-uint32_t *intpnd = (uint32_t *)0x40100000; // pending interruptions in 1
-uint32_t *intmod = (uint32_t *)0x4010000C; // 1 IRQ, 0 FIQ (fast)
-uint32_t *intmsk = (uint32_t *)0x40100010; // 1 masked, 0 enabled
+// uint32_t *intmod = (uint32_t *)0x4010000C; // 1 IRQ, 0 FIQ (fast)
+// uint32_t *intpnd = (uint32_t *)0x40100000; // pending interruptions in 1
+// uint32_t *intmsk = (uint32_t *)0x40100010; // 1 masked, 0 enabled
 
-uint32_t *iopmod = (uint32_t *)0x40100004;  // GPIO configuration
-uint32_t *iopdata = (uint32_t *)0x40100008; // GPIO values
+// uint32_t *iopmod = (uint32_t *)0x40100004;  // GPIO mode (0 input, 0 output)
+// uint32_t *iopdata = (uint32_t *)0x40100008; // GPIO values
 
-uint32_t *tmod = (uint32_t *)0x40100014;   // timer configuration
-uint32_t *tdata0 = (uint32_t *)0x40100018; // recharge register of timer 0
-uint32_t *tcnt0 = (uint32_t *)0x4010001C;  // count register of timer 0
+// uint32_t *tmod = (uint32_t *)0x40100014;   // timer configuration
+// uint32_t *tdata0 = (uint32_t *)0x40100018; // recharge register of timer 0
+// uint32_t *tcnt0 = (uint32_t *)0x4010001C;  // count register of timer 0
 
+// conversion fom hexadecimal to 7 segments value
 const int8_t HexaTo7Seg[16] = {0b1011111, 0b0000110, 0b0111011, 0b0101111, 0b1100110, 0b1101101, 0b1111101, 0b0000111, 0b1111111, 0b1101111, 0b1110111, 0b1111100, 0b1011001, 0b0111110, 0b1111001, 0b1110001};
 
 /**
