@@ -12,7 +12,7 @@ SRC = \
 	c/buffer.c				\
 	c/sched.c				\
 	c/threads.c				\
-	main.c
+	test/mlfq.c				# REPLACE WITH YOUR FILE
 
 BREAKPOINTS= reset panic stop
 
