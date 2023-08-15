@@ -1,3 +1,5 @@
+# arquivos objeto
 *.o
+# arquivos gerados pelo linker
 *.elf
 *.map
